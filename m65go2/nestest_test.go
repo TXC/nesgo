@@ -4,25 +4,13 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"testing"
-
-	s "github.com/stretchr/testify/suite"
 )
 
-func TestNesTestSuite(t *testing.T) {
-	s.Run(t, &nesTest{})
+type NesTest struct {
+	baseTest
 }
 
-type nesTest struct {
-	s.Suite
-	cpu *M6502
-}
-
-func (s *nesTest) Log(args ...any) { s.T().Log(args...) }
-
-func (s *nesTest) Logf(format string, args ...any) { s.T().Logf(format, args...) }
-
-func (s *nesTest) BeforeTest(suiteName, testName string) {
+func (s *NesTest) BeforeTest(suiteName, testName string) {
 	r := s.Require()
 	// Load the ROM file
 	romPath := "test-roms/nestest/nestest.nes"
@@ -67,11 +55,7 @@ func (s *nesTest) BeforeTest(suiteName, testName string) {
 	s.cpu = cpu
 }
 
-func (s *nesTest) AfterTest(_, _ string) {
-	s.cpu = nil
-}
-
-func (s *nesTest) checkStatusCode() {
+func (s *NesTest) checkStatusCode() {
 	// If we got here without hitting the end marker, test may have passed
 	// Check the result byte at $0002
 	s.Equal(uint8(0x00), s.cpu.Memory.Fetch(0x02), "nestest failed with status code %02X at PC:%04X", s.cpu.Memory.Fetch(0x02), s.cpu.Registers.PC)
@@ -83,7 +67,7 @@ func (s *nesTest) checkStatusCode() {
 // TestNestest runs the nestest ROM and compares output against the golden log
 // nestest.nes is a comprehensive CPU test ROM that tests all official 6502 instructions
 // See: https://wiki.nesdev.com/w/index.php/Emulator_tests
-func (s *nesTest) TestNestest() {
+func (s *NesTest) TestNestest() {
 	// Load expected log
 	logPath := "test-roms/nestest/nestest.log"
 	logFile, err := os.Open(logPath)
@@ -147,8 +131,8 @@ func (s *nesTest) TestNestest() {
 	s.checkStatusCode()
 }
 
-// TestNestestAutomated is a simpler version that just checks the final status
-func (s *nesTest) TestNestestAutomated() {
+// TestAutomated is a simpler version that just checks the final status
+func (s *NesTest) TestAutomated() {
 	// Run until we hit the infinite loop at $C66E or max instructions
 	maxInstructions := 10000
 	for range maxInstructions {
@@ -167,11 +151,9 @@ func (s *nesTest) TestNestestAutomated() {
 	s.Fail("Test did not complete after %d instructions (PC=%04X)", maxInstructions, s.cpu.Registers.PC)
 }
 
-// TestNestestWithTrace runs nestest and outputs trace for debugging
-func (s *nesTest) TestNestestWithTrace() {
-	if testing.Short() {
-		s.T().Skip("Skipping trace test in short mode")
-	}
+// TestWithTrace runs nestest and outputs trace for debugging
+func (s *NesTest) TestWithTrace() {
+	s.SkipShort()
 
 	// Create trace output file
 	traceFile, err := os.Create("test-roms/nestest/nestest_trace.log")

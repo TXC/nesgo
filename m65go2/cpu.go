@@ -341,7 +341,7 @@ func (cpu *M6502) Execute() (cycles uint16, error error) {
 	cpu.Registers.PC++
 	cycles += cpu.Instructions.Execute(cpu)
 
-	if cpu.decode.enabled {
+	if cpu.debug&DebugModeVerbose != 0 && cpu.decode.enabled {
 		cpu.log.Println(cpu.decode.String())
 	}
 
@@ -508,166 +508,6 @@ func (cpu *M6502) getAddressValue(mode AddressingMode, status *InstructionStatus
 func (cpu *M6502) containsOpCode(ops []OpCode, opcode OpCode) bool {
 	return slices.Contains(ops, opcode)
 }
-
-/*
-func (cpu *M6502) controlAddress(opcode OpCode, status *InstructionStatus) (address uint16) {
-	// control opcodes end with 00
-
-	if opcode&0x10 == 0 {
-		switch (opcode >> 2) & 0x03 {
-		case 0x00:
-			address = cpu.immediateAddress()
-		case 0x01:
-			address = cpu.zeroPageAddress()
-		case 0x02:
-			address = 0 // not used
-		case 0x03:
-			address = cpu.absoluteAddress()
-		}
-	} else {
-		switch (opcode >> 2) & 0x03 {
-		case 0x00:
-			address = cpu.relativeAddress()
-		case 0x01:
-			address = cpu.zeroPageIndexedAddress(X)
-		case 0x02:
-			address = 0 // not used
-		case 0x03:
-			address = cpu.absoluteIndexedAddress(X, status)
-		}
-	}
-
-	return
-}
-
-func (cpu *M6502) aluAddress(opcode OpCode, status *InstructionStatus) (address uint16) {
-	// alu opcodes end with 01
-
-	if opcode&0x10 == 0 {
-		switch (opcode >> 2) & 0x03 {
-		case 0x00:
-			address = cpu.indexedIndirectAddress()
-		case 0x01:
-			address = cpu.zeroPageAddress()
-		case 0x02:
-			address = cpu.immediateAddress()
-		case 0x03:
-			address = cpu.absoluteAddress()
-		}
-	} else {
-		switch (opcode >> 2) & 0x03 {
-		case 0x00:
-			address = cpu.indirectIndexedAddress(status)
-		case 0x01:
-			address = cpu.zeroPageIndexedAddress(X)
-		case 0x02:
-			address = cpu.absoluteIndexedAddress(Y, status)
-		case 0x03:
-			address = cpu.absoluteIndexedAddress(X, status)
-		}
-	}
-
-	return
-}
-
-func (cpu *M6502) rmwAddress(opcode OpCode, status *InstructionStatus) (address uint16) {
-	// rmw opcodes end with 10
-	var index Index
-
-	if opcode&0x10 == 0 {
-		switch (opcode >> 2) & 0x03 {
-		case 0x00:
-			address = cpu.immediateAddress()
-		case 0x01:
-			address = cpu.zeroPageAddress()
-		case 0x02:
-			address = 0 // not used
-		case 0x03:
-			address = cpu.absoluteAddress()
-		}
-	} else {
-		switch (opcode >> 2) & 0x03 {
-		case 0x00:
-			address = 0 // not used
-		case 0x01:
-
-			switch opcode & 0xf0 {
-			case 0x90, 0xb0:
-				index = Y
-			default:
-				index = X
-			}
-
-			address = cpu.zeroPageIndexedAddress(index)
-		case 0x02:
-			address = 0 // not used
-		case 0x03:
-
-			switch opcode & 0xf0 {
-			case 0x90, 0xb0:
-				index = Y
-			default:
-				index = X
-			}
-
-			address = cpu.absoluteIndexedAddress(index, status)
-		}
-	}
-
-	return
-}
-
-func (cpu *M6502) unofficialAddress(opcode OpCode, status *InstructionStatus) (address uint16) {
-	// alu opcodes end with 11
-	var index Index
-
-	if opcode&0x10 == 0 {
-		switch (opcode >> 2) & 0x03 {
-		case 0x00:
-			address = cpu.indexedIndirectAddress()
-		case 0x01:
-			address = cpu.zeroPageAddress()
-		case 0x02:
-			address = cpu.immediateAddress()
-		case 0x03:
-			address = cpu.absoluteAddress()
-		}
-	} else {
-		switch (opcode >> 2) & 0x03 {
-		case 0x00:
-			address = cpu.indirectIndexedAddress(status)
-		case 0x01:
-
-			switch opcode & 0xf0 {
-			case 0x90, 0xb0:
-				index = Y
-			default:
-				index = X
-			}
-
-			address = cpu.zeroPageIndexedAddress(index)
-		case 0x02:
-			address = cpu.absoluteIndexedAddress(Y, status)
-		case 0x03:
-
-			if opcode == 0x9c {
-				index = X
-			} else {
-				switch opcode & 0xf0 {
-				case 0x90, 0xb0:
-					index = Y
-				default:
-					index = X
-				}
-			}
-
-			address = cpu.absoluteIndexedAddress(index, status)
-		}
-	}
-
-	return
-}
-*/
 
 // Immediate Addressing Mode
 func (cpu *M6502) immediateAddress() (result uint16) {
@@ -1000,11 +840,15 @@ func (cpu *M6502) addition(input uint8) {
 			high += 0x0010
 		}
 
+		// Check for BCD carry before adjusting
+		carry := uint16(0)
 		if high >= 0x00a0 {
 			high -= 0x00a0
+			carry = 0x0100 // Set carry flag
 		}
 
-		result := cpu.setCFlagAddition(high | (low & 0x000f))
+		result := high | (low & 0x000f) | carry
+		cpu.setCFlagAddition(result)
 		cpu.Registers.A = cpu.setZNFlags(uint8(cpu.setVFlagAddition(orig, value, result)))
 	}
 }

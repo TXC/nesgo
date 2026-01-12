@@ -1,17 +1,11 @@
 package m65go2
 
 import (
-	"testing"
-
 	s "github.com/stretchr/testify/suite"
 )
 
-func TestInstructionsSuite(t *testing.T) {
-	s.Run(t, &instTest{})
-}
-
-// region instTest
-type instTest struct {
+// region InstructionsTest
+type InstructionsTest struct {
 	s.Suite
 	cpu *M6502
 	// Subtest Instruction To Test
@@ -20,23 +14,23 @@ type instTest struct {
 	_oldPrefix string
 }
 
-func (s *instTest) BeforeTest(suiteName, testName string) {
+func (s *InstructionsTest) BeforeTest(suiteName, testName string) {
 	s.cpu = NewM6502(NewBasicMemory(DefaultMemorySize))
 	s.cpu.Reset()
 	s.cpu.breakError = true
 }
 
-func (s *instTest) AfterTest(_, _ string) {
+func (s *InstructionsTest) AfterTest(_, _ string) {
 	s.cpu = nil
 }
 
-func (s *instTest) SetupSubTest() {
+func (s *InstructionsTest) SetupSubTest() {
 	s.cpu = NewM6502(NewBasicMemory(DefaultMemorySize))
 	s.cpu.Reset()
 	s.cpu.breakError = true
 }
 
-func (s *instTest) TearDownSubTest() {
+func (s *InstructionsTest) TearDownSubTest() {
 }
 
 // endregion instTest
@@ -55,7 +49,7 @@ func (s *instTest) TestBadOpCodeError() {
 
 // BadOpCodeError
 
-func (s *instTest) TestKil() {
+func (s *InstructionsTest) TestKil() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -70,7 +64,7 @@ func (s *instTest) TestKil() {
 
 // LDA
 
-func (s *instTest) TestLdaImmediate() {
+func (s *InstructionsTest) TestLdaImmediate() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -83,7 +77,7 @@ func (s *instTest) TestLdaImmediate() {
 
 }
 
-func (s *instTest) TestLdaZeroPage() {
+func (s *InstructionsTest) TestLdaZeroPage() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -97,7 +91,7 @@ func (s *instTest) TestLdaZeroPage() {
 
 }
 
-func (s *instTest) TestLdaZeroPageX() {
+func (s *InstructionsTest) TestLdaZeroPageX() {
 
 	s.cpu.Registers.X = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -112,7 +106,7 @@ func (s *instTest) TestLdaZeroPageX() {
 
 }
 
-func (s *instTest) TestLdaAbsolute() {
+func (s *InstructionsTest) TestLdaAbsolute() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -127,7 +121,7 @@ func (s *instTest) TestLdaAbsolute() {
 
 }
 
-func (s *instTest) TestLdaAbsoluteX() {
+func (s *InstructionsTest) TestLdaAbsoluteX() {
 
 	s.cpu.Registers.X = 1
 	s.cpu.Registers.PC = 0x0100
@@ -156,7 +150,7 @@ func (s *instTest) TestLdaAbsoluteX() {
 
 }
 
-func (s *instTest) TestLdaAbsoluteY() {
+func (s *InstructionsTest) TestLdaAbsoluteY() {
 
 	s.cpu.Registers.Y = 1
 	s.cpu.Registers.PC = 0x0100
@@ -185,7 +179,7 @@ func (s *instTest) TestLdaAbsoluteY() {
 
 }
 
-func (s *instTest) TestLdaIndirectX() {
+func (s *InstructionsTest) TestLdaIndirectX() {
 
 	s.cpu.Registers.X = 1
 	s.cpu.Registers.PC = 0x0100
@@ -202,7 +196,7 @@ func (s *instTest) TestLdaIndirectX() {
 
 }
 
-func (s *instTest) TestLdaIndirectY() {
+func (s *InstructionsTest) TestLdaIndirectY() {
 
 	s.cpu.Registers.Y = 1
 	s.cpu.Registers.PC = 0x0100
@@ -233,7 +227,7 @@ func (s *instTest) TestLdaIndirectY() {
 
 }
 
-func (s *instTest) TestLdaZFlagSet() {
+func (s *InstructionsTest) TestLdaZFlagSet() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -246,7 +240,7 @@ func (s *instTest) TestLdaZFlagSet() {
 
 }
 
-func (s *instTest) TestLdaZFlagUnset() {
+func (s *InstructionsTest) TestLdaZFlagUnset() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -259,7 +253,7 @@ func (s *instTest) TestLdaZFlagUnset() {
 
 }
 
-func (s *instTest) TestLdaNFlagSet() {
+func (s *InstructionsTest) TestLdaNFlagSet() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -272,7 +266,7 @@ func (s *instTest) TestLdaNFlagSet() {
 
 }
 
-func (s *instTest) TestLdaNFlagUnset() {
+func (s *InstructionsTest) TestLdaNFlagUnset() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -287,7 +281,7 @@ func (s *instTest) TestLdaNFlagUnset() {
 
 // LDX
 
-func (s *instTest) TestLdxImmediate() {
+func (s *InstructionsTest) TestLdxImmediate() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -300,7 +294,7 @@ func (s *instTest) TestLdxImmediate() {
 
 }
 
-func (s *instTest) TestLdxZeroPage() {
+func (s *InstructionsTest) TestLdxZeroPage() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -314,7 +308,7 @@ func (s *instTest) TestLdxZeroPage() {
 
 }
 
-func (s *instTest) TestLdxZeroPageY() {
+func (s *InstructionsTest) TestLdxZeroPageY() {
 
 	s.cpu.Registers.Y = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -329,7 +323,7 @@ func (s *instTest) TestLdxZeroPageY() {
 
 }
 
-func (s *instTest) TestLdxAbsolute() {
+func (s *InstructionsTest) TestLdxAbsolute() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -344,7 +338,7 @@ func (s *instTest) TestLdxAbsolute() {
 
 }
 
-func (s *instTest) TestLdxAbsoluteY() {
+func (s *InstructionsTest) TestLdxAbsoluteY() {
 
 	s.cpu.Registers.Y = 1
 	s.cpu.Registers.PC = 0x0100
@@ -360,7 +354,7 @@ func (s *instTest) TestLdxAbsoluteY() {
 
 }
 
-func (s *instTest) TestLdxZFlagSet() {
+func (s *InstructionsTest) TestLdxZFlagSet() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -373,7 +367,7 @@ func (s *instTest) TestLdxZFlagSet() {
 
 }
 
-func (s *instTest) TestLdxZFlagUnset() {
+func (s *InstructionsTest) TestLdxZFlagUnset() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -386,7 +380,7 @@ func (s *instTest) TestLdxZFlagUnset() {
 
 }
 
-func (s *instTest) TestLdxNFlagSet() {
+func (s *InstructionsTest) TestLdxNFlagSet() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -399,7 +393,7 @@ func (s *instTest) TestLdxNFlagSet() {
 
 }
 
-func (s *instTest) TestLdxNFlagUnset() {
+func (s *InstructionsTest) TestLdxNFlagUnset() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -414,7 +408,7 @@ func (s *instTest) TestLdxNFlagUnset() {
 
 // LDY
 
-func (s *instTest) TestLdyImmediate() {
+func (s *InstructionsTest) TestLdyImmediate() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -427,7 +421,7 @@ func (s *instTest) TestLdyImmediate() {
 
 }
 
-func (s *instTest) TestLdyZeroPage() {
+func (s *InstructionsTest) TestLdyZeroPage() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -441,7 +435,7 @@ func (s *instTest) TestLdyZeroPage() {
 
 }
 
-func (s *instTest) TestLdyZeroPageX() {
+func (s *InstructionsTest) TestLdyZeroPageX() {
 
 	s.cpu.Registers.X = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -456,7 +450,7 @@ func (s *instTest) TestLdyZeroPageX() {
 
 }
 
-func (s *instTest) TestLdyAbsolute() {
+func (s *InstructionsTest) TestLdyAbsolute() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -471,7 +465,7 @@ func (s *instTest) TestLdyAbsolute() {
 
 }
 
-func (s *instTest) TestLdyAbsoluteX() {
+func (s *InstructionsTest) TestLdyAbsoluteX() {
 
 	s.cpu.Registers.X = 1
 	s.cpu.Registers.PC = 0x0100
@@ -487,7 +481,7 @@ func (s *instTest) TestLdyAbsoluteX() {
 
 }
 
-func (s *instTest) TestLdyZFlagSet() {
+func (s *InstructionsTest) TestLdyZFlagSet() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -500,7 +494,7 @@ func (s *instTest) TestLdyZFlagSet() {
 
 }
 
-func (s *instTest) TestLdyZFlagUnset() {
+func (s *InstructionsTest) TestLdyZFlagUnset() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -513,7 +507,7 @@ func (s *instTest) TestLdyZFlagUnset() {
 
 }
 
-func (s *instTest) TestLdyNFlagSet() {
+func (s *InstructionsTest) TestLdyNFlagSet() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -526,7 +520,7 @@ func (s *instTest) TestLdyNFlagSet() {
 
 }
 
-func (s *instTest) TestLdyNFlagUnset() {
+func (s *InstructionsTest) TestLdyNFlagUnset() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -541,7 +535,7 @@ func (s *instTest) TestLdyNFlagUnset() {
 
 // STA
 
-func (s *instTest) TestStaZeroPage() {
+func (s *InstructionsTest) TestStaZeroPage() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -555,7 +549,7 @@ func (s *instTest) TestStaZeroPage() {
 
 }
 
-func (s *instTest) TestStaZeroPageX() {
+func (s *InstructionsTest) TestStaZeroPageX() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.X = 0x01
@@ -570,7 +564,7 @@ func (s *instTest) TestStaZeroPageX() {
 
 }
 
-func (s *instTest) TestStaAbsolute() {
+func (s *InstructionsTest) TestStaAbsolute() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -585,7 +579,7 @@ func (s *instTest) TestStaAbsolute() {
 
 }
 
-func (s *instTest) TestStaAbsoluteX() {
+func (s *InstructionsTest) TestStaAbsoluteX() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.X = 1
@@ -601,7 +595,7 @@ func (s *instTest) TestStaAbsoluteX() {
 
 }
 
-func (s *instTest) TestStaAbsoluteY() {
+func (s *InstructionsTest) TestStaAbsoluteY() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.Y = 1
@@ -617,7 +611,7 @@ func (s *instTest) TestStaAbsoluteY() {
 
 }
 
-func (s *instTest) TestStaIndirectX() {
+func (s *InstructionsTest) TestStaIndirectX() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.X = 1
@@ -634,7 +628,7 @@ func (s *instTest) TestStaIndirectX() {
 
 }
 
-func (s *instTest) TestStaIndirectY() {
+func (s *InstructionsTest) TestStaIndirectY() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.Y = 1
@@ -653,7 +647,7 @@ func (s *instTest) TestStaIndirectY() {
 
 // STX
 
-func (s *instTest) TestStxZeroPage() {
+func (s *InstructionsTest) TestStxZeroPage() {
 
 	s.cpu.Registers.X = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -667,7 +661,7 @@ func (s *instTest) TestStxZeroPage() {
 
 }
 
-func (s *instTest) TestStxZeroPageY() {
+func (s *InstructionsTest) TestStxZeroPageY() {
 
 	s.cpu.Registers.X = 0xff
 	s.cpu.Registers.Y = 0x01
@@ -682,7 +676,7 @@ func (s *instTest) TestStxZeroPageY() {
 
 }
 
-func (s *instTest) TestStxAbsolute() {
+func (s *InstructionsTest) TestStxAbsolute() {
 
 	s.cpu.Registers.X = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -699,7 +693,7 @@ func (s *instTest) TestStxAbsolute() {
 
 // STY
 
-func (s *instTest) TestStyZeroPage() {
+func (s *InstructionsTest) TestStyZeroPage() {
 
 	s.cpu.Registers.Y = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -713,7 +707,7 @@ func (s *instTest) TestStyZeroPage() {
 
 }
 
-func (s *instTest) TestStyZeroPageY() {
+func (s *InstructionsTest) TestStyZeroPageY() {
 
 	s.cpu.Registers.Y = 0xff
 	s.cpu.Registers.X = 0x01
@@ -728,7 +722,7 @@ func (s *instTest) TestStyZeroPageY() {
 
 }
 
-func (s *instTest) TestStyAbsolute() {
+func (s *InstructionsTest) TestStyAbsolute() {
 
 	s.cpu.Registers.Y = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -745,7 +739,7 @@ func (s *instTest) TestStyAbsolute() {
 
 // TAX
 
-func (s *instTest) TestTax() {
+func (s *InstructionsTest) TestTax() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -758,7 +752,7 @@ func (s *instTest) TestTax() {
 
 }
 
-func (s *instTest) TestTaxZFlagSet() {
+func (s *InstructionsTest) TestTaxZFlagSet() {
 
 	s.cpu.Registers.A = 0x00
 	s.cpu.Registers.PC = 0x0100
@@ -771,7 +765,7 @@ func (s *instTest) TestTaxZFlagSet() {
 
 }
 
-func (s *instTest) TestTaxZFlagUnset() {
+func (s *InstructionsTest) TestTaxZFlagUnset() {
 
 	s.cpu.Registers.A = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -784,7 +778,7 @@ func (s *instTest) TestTaxZFlagUnset() {
 
 }
 
-func (s *instTest) TestTaxNFlagSet() {
+func (s *InstructionsTest) TestTaxNFlagSet() {
 
 	s.cpu.Registers.A = 0x81
 	s.cpu.Registers.PC = 0x0100
@@ -797,7 +791,7 @@ func (s *instTest) TestTaxNFlagSet() {
 
 }
 
-func (s *instTest) TestTaxNFlagUnset() {
+func (s *InstructionsTest) TestTaxNFlagUnset() {
 
 	s.cpu.Registers.A = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -812,7 +806,7 @@ func (s *instTest) TestTaxNFlagUnset() {
 
 // TAY
 
-func (s *instTest) TestTay() {
+func (s *InstructionsTest) TestTay() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -827,7 +821,7 @@ func (s *instTest) TestTay() {
 
 // TXA
 
-func (s *instTest) TestTxa() {
+func (s *InstructionsTest) TestTxa() {
 
 	s.cpu.Registers.X = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -842,7 +836,7 @@ func (s *instTest) TestTxa() {
 
 // TYA
 
-func (s *instTest) TestTya() {
+func (s *InstructionsTest) TestTya() {
 
 	s.cpu.Registers.Y = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -857,7 +851,7 @@ func (s *instTest) TestTya() {
 
 // TSX
 
-func (s *instTest) TestTsx() {
+func (s *InstructionsTest) TestTsx() {
 
 	s.cpu.Registers.SP = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -872,7 +866,7 @@ func (s *instTest) TestTsx() {
 
 // TXS
 
-func (s *instTest) TestTxs() {
+func (s *InstructionsTest) TestTxs() {
 
 	s.cpu.Registers.X = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -887,7 +881,7 @@ func (s *instTest) TestTxs() {
 
 // PHA
 
-func (s *instTest) TestPha() {
+func (s *InstructionsTest) TestPha() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -902,7 +896,7 @@ func (s *instTest) TestPha() {
 
 // PHP
 
-func (s *instTest) TestPhp() {
+func (s *InstructionsTest) TestPhp() {
 
 	s.cpu.Registers.P = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -917,7 +911,7 @@ func (s *instTest) TestPhp() {
 
 // PLA
 
-func (s *instTest) TestPla() {
+func (s *InstructionsTest) TestPla() {
 
 	s.cpu.Registers.PC = 0x0100
 	s.cpu.push(0xff)
@@ -930,7 +924,7 @@ func (s *instTest) TestPla() {
 
 }
 
-func (s *instTest) TestPlaZFlagSet() {
+func (s *InstructionsTest) TestPlaZFlagSet() {
 
 	s.cpu.push(0x00)
 	s.cpu.Registers.PC = 0x0100
@@ -943,7 +937,7 @@ func (s *instTest) TestPlaZFlagSet() {
 
 }
 
-func (s *instTest) TestPlaZFlagUnset() {
+func (s *InstructionsTest) TestPlaZFlagUnset() {
 
 	s.cpu.push(0x01)
 	s.cpu.Registers.PC = 0x0100
@@ -956,7 +950,7 @@ func (s *instTest) TestPlaZFlagUnset() {
 
 }
 
-func (s *instTest) TestPlaNFlagSet() {
+func (s *InstructionsTest) TestPlaNFlagSet() {
 
 	s.cpu.push(0x81)
 	s.cpu.Registers.PC = 0x0100
@@ -969,7 +963,7 @@ func (s *instTest) TestPlaNFlagSet() {
 
 }
 
-func (s *instTest) TestPlaNFlagUnset() {
+func (s *InstructionsTest) TestPlaNFlagUnset() {
 
 	s.cpu.push(0x01)
 	s.cpu.Registers.PC = 0x0100
@@ -984,7 +978,7 @@ func (s *instTest) TestPlaNFlagUnset() {
 
 // PLP
 
-func (s *instTest) TestPlp() {
+func (s *InstructionsTest) TestPlp() {
 
 	s.cpu.Registers.PC = 0x0100
 	s.cpu.push(0xff)
@@ -1000,7 +994,7 @@ func (s *instTest) TestPlp() {
 
 // AND
 
-func (s *instTest) TestAndImmediate() {
+func (s *InstructionsTest) TestAndImmediate() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -1014,7 +1008,7 @@ func (s *instTest) TestAndImmediate() {
 
 }
 
-func (s *instTest) TestAndZeroPage() {
+func (s *InstructionsTest) TestAndZeroPage() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -1029,7 +1023,7 @@ func (s *instTest) TestAndZeroPage() {
 
 }
 
-func (s *instTest) TestAndZeroPageX() {
+func (s *InstructionsTest) TestAndZeroPageX() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.X = 0x01
@@ -1045,7 +1039,7 @@ func (s *instTest) TestAndZeroPageX() {
 
 }
 
-func (s *instTest) TestAndAbsolute() {
+func (s *InstructionsTest) TestAndAbsolute() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -1061,7 +1055,7 @@ func (s *instTest) TestAndAbsolute() {
 
 }
 
-func (s *instTest) TestAndAbsoluteX() {
+func (s *InstructionsTest) TestAndAbsoluteX() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.X = 1
@@ -1078,7 +1072,7 @@ func (s *instTest) TestAndAbsoluteX() {
 
 }
 
-func (s *instTest) TestAndAbsoluteY() {
+func (s *InstructionsTest) TestAndAbsoluteY() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.Y = 1
@@ -1095,7 +1089,7 @@ func (s *instTest) TestAndAbsoluteY() {
 
 }
 
-func (s *instTest) TestAndIndirectX() {
+func (s *InstructionsTest) TestAndIndirectX() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.X = 1
@@ -1113,7 +1107,7 @@ func (s *instTest) TestAndIndirectX() {
 
 }
 
-func (s *instTest) TestAndIndirectY() {
+func (s *InstructionsTest) TestAndIndirectY() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.Y = 1
@@ -1131,7 +1125,7 @@ func (s *instTest) TestAndIndirectY() {
 
 }
 
-func (s *instTest) TestAndZFlagSet() {
+func (s *InstructionsTest) TestAndZFlagSet() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -1144,7 +1138,7 @@ func (s *instTest) TestAndZFlagSet() {
 
 }
 
-func (s *instTest) TestAndZFlagUnset() {
+func (s *InstructionsTest) TestAndZFlagUnset() {
 
 	s.cpu.Registers.A = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -1158,7 +1152,7 @@ func (s *instTest) TestAndZFlagUnset() {
 
 }
 
-func (s *instTest) TestAndNFlagSet() {
+func (s *InstructionsTest) TestAndNFlagSet() {
 
 	s.cpu.Registers.A = 0x81
 	s.cpu.Registers.PC = 0x0100
@@ -1172,7 +1166,7 @@ func (s *instTest) TestAndNFlagSet() {
 
 }
 
-func (s *instTest) TestAndNFlagUnset() {
+func (s *InstructionsTest) TestAndNFlagUnset() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -1187,7 +1181,7 @@ func (s *instTest) TestAndNFlagUnset() {
 
 // EOR
 
-func (s *instTest) TestEorImmediate() {
+func (s *InstructionsTest) TestEorImmediate() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -1201,7 +1195,7 @@ func (s *instTest) TestEorImmediate() {
 
 }
 
-func (s *instTest) TestEorZeroPage() {
+func (s *InstructionsTest) TestEorZeroPage() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -1216,7 +1210,7 @@ func (s *instTest) TestEorZeroPage() {
 
 }
 
-func (s *instTest) TestEorZeroPageX() {
+func (s *InstructionsTest) TestEorZeroPageX() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.X = 0x01
@@ -1232,7 +1226,7 @@ func (s *instTest) TestEorZeroPageX() {
 
 }
 
-func (s *instTest) TestEorAbsolute() {
+func (s *InstructionsTest) TestEorAbsolute() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -1248,7 +1242,7 @@ func (s *instTest) TestEorAbsolute() {
 
 }
 
-func (s *instTest) TestEorAbsoluteX() {
+func (s *InstructionsTest) TestEorAbsoluteX() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.X = 1
@@ -1265,7 +1259,7 @@ func (s *instTest) TestEorAbsoluteX() {
 
 }
 
-func (s *instTest) TestEorAbsoluteY() {
+func (s *InstructionsTest) TestEorAbsoluteY() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.Y = 1
@@ -1282,7 +1276,7 @@ func (s *instTest) TestEorAbsoluteY() {
 
 }
 
-func (s *instTest) TestEorIndirectX() {
+func (s *InstructionsTest) TestEorIndirectX() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.X = 1
@@ -1300,7 +1294,7 @@ func (s *instTest) TestEorIndirectX() {
 
 }
 
-func (s *instTest) TestEorIndirectY() {
+func (s *InstructionsTest) TestEorIndirectY() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.Y = 1
@@ -1318,7 +1312,7 @@ func (s *instTest) TestEorIndirectY() {
 
 }
 
-func (s *instTest) TestEorZFlagSet() {
+func (s *InstructionsTest) TestEorZFlagSet() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -1331,7 +1325,7 @@ func (s *instTest) TestEorZFlagSet() {
 
 }
 
-func (s *instTest) TestEorZFlagUnset() {
+func (s *InstructionsTest) TestEorZFlagUnset() {
 
 	s.cpu.Registers.A = 0x00
 	s.cpu.Registers.PC = 0x0100
@@ -1345,7 +1339,7 @@ func (s *instTest) TestEorZFlagUnset() {
 
 }
 
-func (s *instTest) TestEorNFlagSet() {
+func (s *InstructionsTest) TestEorNFlagSet() {
 
 	s.cpu.Registers.A = 0x00
 	s.cpu.Registers.PC = 0x0100
@@ -1359,7 +1353,7 @@ func (s *instTest) TestEorNFlagSet() {
 
 }
 
-func (s *instTest) TestEorNFlagUnset() {
+func (s *InstructionsTest) TestEorNFlagUnset() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -1374,7 +1368,7 @@ func (s *instTest) TestEorNFlagUnset() {
 
 // ORA
 
-func (s *instTest) TestOraImmediate() {
+func (s *InstructionsTest) TestOraImmediate() {
 
 	s.cpu.Registers.A = 0xf0
 	s.cpu.Registers.PC = 0x0100
@@ -1388,7 +1382,7 @@ func (s *instTest) TestOraImmediate() {
 
 }
 
-func (s *instTest) TestOraZeroPage() {
+func (s *InstructionsTest) TestOraZeroPage() {
 
 	s.cpu.Registers.A = 0xf0
 	s.cpu.Registers.PC = 0x0100
@@ -1403,7 +1397,7 @@ func (s *instTest) TestOraZeroPage() {
 
 }
 
-func (s *instTest) TestOraZeroPageX() {
+func (s *InstructionsTest) TestOraZeroPageX() {
 
 	s.cpu.Registers.A = 0xf0
 	s.cpu.Registers.X = 0x01
@@ -1419,7 +1413,7 @@ func (s *instTest) TestOraZeroPageX() {
 
 }
 
-func (s *instTest) TestOraAbsolute() {
+func (s *InstructionsTest) TestOraAbsolute() {
 
 	s.cpu.Registers.A = 0xf0
 	s.cpu.Registers.PC = 0x0100
@@ -1435,7 +1429,7 @@ func (s *instTest) TestOraAbsolute() {
 
 }
 
-func (s *instTest) TestOraAbsoluteX() {
+func (s *InstructionsTest) TestOraAbsoluteX() {
 
 	s.cpu.Registers.A = 0xf0
 	s.cpu.Registers.X = 1
@@ -1452,7 +1446,7 @@ func (s *instTest) TestOraAbsoluteX() {
 
 }
 
-func (s *instTest) TestOraAbsoluteY() {
+func (s *InstructionsTest) TestOraAbsoluteY() {
 
 	s.cpu.Registers.A = 0xf0
 	s.cpu.Registers.Y = 1
@@ -1469,7 +1463,7 @@ func (s *instTest) TestOraAbsoluteY() {
 
 }
 
-func (s *instTest) TestOraIndirectX() {
+func (s *InstructionsTest) TestOraIndirectX() {
 
 	s.cpu.Registers.A = 0xf0
 	s.cpu.Registers.X = 1
@@ -1487,7 +1481,7 @@ func (s *instTest) TestOraIndirectX() {
 
 }
 
-func (s *instTest) TestOraIndirectY() {
+func (s *InstructionsTest) TestOraIndirectY() {
 
 	s.cpu.Registers.A = 0xf0
 	s.cpu.Registers.Y = 1
@@ -1505,7 +1499,7 @@ func (s *instTest) TestOraIndirectY() {
 
 }
 
-func (s *instTest) TestOraZFlagSet() {
+func (s *InstructionsTest) TestOraZFlagSet() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -1518,7 +1512,7 @@ func (s *instTest) TestOraZFlagSet() {
 
 }
 
-func (s *instTest) TestOraZFlagUnset() {
+func (s *InstructionsTest) TestOraZFlagUnset() {
 
 	s.cpu.Registers.A = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -1532,7 +1526,7 @@ func (s *instTest) TestOraZFlagUnset() {
 
 }
 
-func (s *instTest) TestOraNFlagSet() {
+func (s *InstructionsTest) TestOraNFlagSet() {
 
 	s.cpu.Registers.A = 0x81
 	s.cpu.Registers.PC = 0x0100
@@ -1546,7 +1540,7 @@ func (s *instTest) TestOraNFlagSet() {
 
 }
 
-func (s *instTest) TestOraNFlagUnset() {
+func (s *InstructionsTest) TestOraNFlagUnset() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -1561,7 +1555,7 @@ func (s *instTest) TestOraNFlagUnset() {
 
 // BIT
 
-func (s *instTest) TestBitZeroPage() {
+func (s *InstructionsTest) TestBitZeroPage() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -1576,7 +1570,7 @@ func (s *instTest) TestBitZeroPage() {
 
 }
 
-func (s *instTest) TestBitAbsolute() {
+func (s *InstructionsTest) TestBitAbsolute() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -1592,7 +1586,7 @@ func (s *instTest) TestBitAbsolute() {
 
 }
 
-func (s *instTest) TestBitNFlagSet() {
+func (s *InstructionsTest) TestBitNFlagSet() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -1607,7 +1601,7 @@ func (s *instTest) TestBitNFlagSet() {
 
 }
 
-func (s *instTest) TestBitNFlagUnset() {
+func (s *InstructionsTest) TestBitNFlagUnset() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -1622,7 +1616,7 @@ func (s *instTest) TestBitNFlagUnset() {
 
 }
 
-func (s *instTest) TestBitVFlagSet() {
+func (s *InstructionsTest) TestBitVFlagSet() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -1637,7 +1631,7 @@ func (s *instTest) TestBitVFlagSet() {
 
 }
 
-func (s *instTest) TestBitVFlagUnset() {
+func (s *InstructionsTest) TestBitVFlagUnset() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -1652,7 +1646,7 @@ func (s *instTest) TestBitVFlagUnset() {
 
 }
 
-func (s *instTest) TestBitZFlagSet() {
+func (s *InstructionsTest) TestBitZFlagSet() {
 
 	s.cpu.Registers.A = 0x00
 	s.cpu.Registers.PC = 0x0100
@@ -1667,7 +1661,7 @@ func (s *instTest) TestBitZFlagSet() {
 
 }
 
-func (s *instTest) TestBitZFlagUnset() {
+func (s *InstructionsTest) TestBitZFlagUnset() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -1684,7 +1678,7 @@ func (s *instTest) TestBitZFlagUnset() {
 
 // ADC
 
-func (s *instTest) TestAdcImmediate() {
+func (s *InstructionsTest) TestAdcImmediate() {
 
 	s.cpu.Registers.A = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -1732,7 +1726,7 @@ func (s *instTest) TestAdcImmediate() {
 
 }
 
-func (s *instTest) TestAdcZeroPage() {
+func (s *InstructionsTest) TestAdcZeroPage() {
 
 	s.cpu.Registers.A = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -1747,7 +1741,7 @@ func (s *instTest) TestAdcZeroPage() {
 
 }
 
-func (s *instTest) TestAdcZeroPageX() {
+func (s *InstructionsTest) TestAdcZeroPageX() {
 
 	s.cpu.Registers.A = 0x01
 	s.cpu.Registers.X = 0x01
@@ -1763,7 +1757,7 @@ func (s *instTest) TestAdcZeroPageX() {
 
 }
 
-func (s *instTest) TestAdcAbsolute() {
+func (s *InstructionsTest) TestAdcAbsolute() {
 
 	s.cpu.Registers.A = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -1779,7 +1773,7 @@ func (s *instTest) TestAdcAbsolute() {
 
 }
 
-func (s *instTest) TestAdcAbsoluteX() {
+func (s *InstructionsTest) TestAdcAbsoluteX() {
 
 	s.cpu.Registers.A = 0x01
 	s.cpu.Registers.X = 1
@@ -1796,7 +1790,7 @@ func (s *instTest) TestAdcAbsoluteX() {
 
 }
 
-func (s *instTest) TestAdcAbsoluteY() {
+func (s *InstructionsTest) TestAdcAbsoluteY() {
 
 	s.cpu.Registers.A = 0x01
 	s.cpu.Registers.Y = 1
@@ -1813,7 +1807,7 @@ func (s *instTest) TestAdcAbsoluteY() {
 
 }
 
-func (s *instTest) TestAdcIndirectX() {
+func (s *InstructionsTest) TestAdcIndirectX() {
 
 	s.cpu.Registers.A = 0x01
 	s.cpu.Registers.X = 1
@@ -1831,7 +1825,7 @@ func (s *instTest) TestAdcIndirectX() {
 
 }
 
-func (s *instTest) TestAdcIndirectY() {
+func (s *InstructionsTest) TestAdcIndirectY() {
 
 	s.cpu.Registers.A = 0x01
 	s.cpu.Registers.Y = 1
@@ -1849,7 +1843,7 @@ func (s *instTest) TestAdcIndirectY() {
 
 }
 
-func (s *instTest) TestAdcCFlagSet() {
+func (s *InstructionsTest) TestAdcCFlagSet() {
 
 	s.cpu.Registers.A = 0xff // -1
 	s.cpu.Registers.PC = 0x0100
@@ -1874,7 +1868,7 @@ func (s *instTest) TestAdcCFlagSet() {
 
 }
 
-func (s *instTest) TestAdcCFlagUnset() {
+func (s *InstructionsTest) TestAdcCFlagUnset() {
 
 	s.cpu.Registers.A = 0x00 // +0
 	s.cpu.Registers.PC = 0x0100
@@ -1899,7 +1893,7 @@ func (s *instTest) TestAdcCFlagUnset() {
 
 }
 
-func (s *instTest) TestAdcZFlagSet() {
+func (s *InstructionsTest) TestAdcZFlagSet() {
 
 	s.cpu.Registers.A = 0x00 // +0
 	s.cpu.Registers.PC = 0x0100
@@ -1924,7 +1918,7 @@ func (s *instTest) TestAdcZFlagSet() {
 
 }
 
-func (s *instTest) TestAdcZFlagUnset() {
+func (s *InstructionsTest) TestAdcZFlagUnset() {
 
 	s.cpu.Registers.A = 0x00 // +0
 	s.cpu.Registers.PC = 0x0100
@@ -1948,7 +1942,7 @@ func (s *instTest) TestAdcZFlagUnset() {
 
 }
 
-func (s *instTest) TestAdcVFlagSet() {
+func (s *InstructionsTest) TestAdcVFlagSet() {
 
 	s.cpu.Registers.A = 0x7f // +127
 	s.cpu.Registers.PC = 0x0100
@@ -1962,7 +1956,7 @@ func (s *instTest) TestAdcVFlagSet() {
 
 }
 
-func (s *instTest) TestAdcVFlagUnset() {
+func (s *InstructionsTest) TestAdcVFlagUnset() {
 
 	s.cpu.Registers.A = 0x01 // +1
 	s.cpu.Registers.PC = 0x0100
@@ -1976,7 +1970,7 @@ func (s *instTest) TestAdcVFlagUnset() {
 
 }
 
-func (s *instTest) TestAdcNFlagSet() {
+func (s *InstructionsTest) TestAdcNFlagSet() {
 
 	s.cpu.Registers.A = 0x01 // +1
 	s.cpu.Registers.PC = 0x0100
@@ -1990,7 +1984,7 @@ func (s *instTest) TestAdcNFlagSet() {
 
 }
 
-func (s *instTest) TestAdcNFlagUnset() {
+func (s *InstructionsTest) TestAdcNFlagUnset() {
 
 	s.cpu.Registers.A = 0x01 // +1
 	s.cpu.Registers.PC = 0x0100
@@ -2006,7 +2000,7 @@ func (s *instTest) TestAdcNFlagUnset() {
 
 // SBC
 
-func (s *instTest) TestSbcImmediate() {
+func (s *InstructionsTest) TestSbcImmediate() {
 
 	s.cpu.Registers.P |= C
 	s.cpu.Registers.A = 0x02
@@ -2032,7 +2026,7 @@ func (s *instTest) TestSbcImmediate() {
 
 }
 
-func (s *instTest) TestSbcZeroPage() {
+func (s *InstructionsTest) TestSbcZeroPage() {
 
 	s.cpu.Registers.P |= C
 	s.cpu.Registers.A = 0x02
@@ -2048,7 +2042,7 @@ func (s *instTest) TestSbcZeroPage() {
 
 }
 
-func (s *instTest) TestSbcZeroPageX() {
+func (s *InstructionsTest) TestSbcZeroPageX() {
 
 	s.cpu.Registers.P |= C
 	s.cpu.Registers.A = 0x02
@@ -2065,7 +2059,7 @@ func (s *instTest) TestSbcZeroPageX() {
 
 }
 
-func (s *instTest) TestSbcAbsolute() {
+func (s *InstructionsTest) TestSbcAbsolute() {
 
 	s.cpu.Registers.P |= C
 	s.cpu.Registers.A = 0x02
@@ -2082,7 +2076,7 @@ func (s *instTest) TestSbcAbsolute() {
 
 }
 
-func (s *instTest) TestSbcAbsoluteX() {
+func (s *InstructionsTest) TestSbcAbsoluteX() {
 
 	s.cpu.Registers.P |= C
 	s.cpu.Registers.A = 0x02
@@ -2100,7 +2094,7 @@ func (s *instTest) TestSbcAbsoluteX() {
 
 }
 
-func (s *instTest) TestSbcAbsoluteY() {
+func (s *InstructionsTest) TestSbcAbsoluteY() {
 
 	s.cpu.Registers.P |= C
 	s.cpu.Registers.A = 0x02
@@ -2118,7 +2112,7 @@ func (s *instTest) TestSbcAbsoluteY() {
 
 }
 
-func (s *instTest) TestSbcIndirectX() {
+func (s *InstructionsTest) TestSbcIndirectX() {
 
 	s.cpu.Registers.P |= C
 	s.cpu.Registers.A = 0x02
@@ -2137,7 +2131,7 @@ func (s *instTest) TestSbcIndirectX() {
 
 }
 
-func (s *instTest) TestSbcIndirectY() {
+func (s *InstructionsTest) TestSbcIndirectY() {
 
 	s.cpu.Registers.P |= C
 	s.cpu.Registers.A = 0x02
@@ -2156,7 +2150,7 @@ func (s *instTest) TestSbcIndirectY() {
 
 }
 
-func (s *instTest) TestSbcCFlagSet() {
+func (s *InstructionsTest) TestSbcCFlagSet() {
 
 	s.cpu.Registers.A = 0xc4 // -60
 	s.cpu.Registers.PC = 0x0100
@@ -2170,7 +2164,7 @@ func (s *instTest) TestSbcCFlagSet() {
 
 }
 
-func (s *instTest) TestSbcCFlagUnset() {
+func (s *InstructionsTest) TestSbcCFlagUnset() {
 
 	s.cpu.Registers.A = 0x02 // +2
 	s.cpu.Registers.PC = 0x0100
@@ -2184,7 +2178,7 @@ func (s *instTest) TestSbcCFlagUnset() {
 
 }
 
-func (s *instTest) TestSbcZFlagSet() {
+func (s *InstructionsTest) TestSbcZFlagSet() {
 
 	s.cpu.Registers.A = 0x02 // +2
 	s.cpu.Registers.PC = 0x0100
@@ -2198,7 +2192,7 @@ func (s *instTest) TestSbcZFlagSet() {
 
 }
 
-func (s *instTest) TestSbcZFlagUnset() {
+func (s *InstructionsTest) TestSbcZFlagUnset() {
 
 	s.cpu.Registers.A = 0x02 // +2
 	s.cpu.Registers.PC = 0x0100
@@ -2212,7 +2206,7 @@ func (s *instTest) TestSbcZFlagUnset() {
 
 }
 
-func (s *instTest) TestSbcVFlagSet() {
+func (s *InstructionsTest) TestSbcVFlagSet() {
 
 	s.cpu.Registers.A = 0x80 // -128
 	s.cpu.Registers.PC = 0x0100
@@ -2226,7 +2220,7 @@ func (s *instTest) TestSbcVFlagSet() {
 
 }
 
-func (s *instTest) TestSbcVFlagUnset() {
+func (s *InstructionsTest) TestSbcVFlagUnset() {
 
 	s.cpu.Registers.A = 0x01 // +1
 	s.cpu.Registers.PC = 0x0100
@@ -2240,7 +2234,7 @@ func (s *instTest) TestSbcVFlagUnset() {
 
 }
 
-func (s *instTest) TestSbcNFlagSet() {
+func (s *InstructionsTest) TestSbcNFlagSet() {
 
 	s.cpu.Registers.A = 0xfd // -3
 	s.cpu.Registers.PC = 0x0100
@@ -2254,7 +2248,7 @@ func (s *instTest) TestSbcNFlagSet() {
 
 }
 
-func (s *instTest) TestSbcNFlagUnset() {
+func (s *InstructionsTest) TestSbcNFlagUnset() {
 
 	s.cpu.Registers.A = 0x02 // +2
 	s.cpu.Registers.PC = 0x0100
@@ -2270,7 +2264,7 @@ func (s *instTest) TestSbcNFlagUnset() {
 
 // CMP
 
-func (s *instTest) TestCmpImmediate() {
+func (s *InstructionsTest) TestCmpImmediate() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -2284,7 +2278,7 @@ func (s *instTest) TestCmpImmediate() {
 
 }
 
-func (s *instTest) TestCmpZeroPage() {
+func (s *InstructionsTest) TestCmpZeroPage() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -2299,7 +2293,7 @@ func (s *instTest) TestCmpZeroPage() {
 
 }
 
-func (s *instTest) TestCmpZeroPageX() {
+func (s *InstructionsTest) TestCmpZeroPageX() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.X = 0x01
@@ -2315,7 +2309,7 @@ func (s *instTest) TestCmpZeroPageX() {
 
 }
 
-func (s *instTest) TestCmpAbsolute() {
+func (s *InstructionsTest) TestCmpAbsolute() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -2331,7 +2325,7 @@ func (s *instTest) TestCmpAbsolute() {
 
 }
 
-func (s *instTest) TestCmpAbsoluteX() {
+func (s *InstructionsTest) TestCmpAbsoluteX() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.X = 1
@@ -2348,7 +2342,7 @@ func (s *instTest) TestCmpAbsoluteX() {
 
 }
 
-func (s *instTest) TestCmpAbsoluteY() {
+func (s *InstructionsTest) TestCmpAbsoluteY() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.Y = 1
@@ -2365,7 +2359,7 @@ func (s *instTest) TestCmpAbsoluteY() {
 
 }
 
-func (s *instTest) TestCmpIndirectX() {
+func (s *InstructionsTest) TestCmpIndirectX() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.X = 1
@@ -2383,7 +2377,7 @@ func (s *instTest) TestCmpIndirectX() {
 
 }
 
-func (s *instTest) TestCmpIndirectY() {
+func (s *InstructionsTest) TestCmpIndirectY() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.Y = 1
@@ -2401,7 +2395,7 @@ func (s *instTest) TestCmpIndirectY() {
 
 }
 
-func (s *instTest) TestCmpNFlagSet() {
+func (s *InstructionsTest) TestCmpNFlagSet() {
 
 	s.cpu.Registers.A = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -2415,7 +2409,7 @@ func (s *instTest) TestCmpNFlagSet() {
 
 }
 
-func (s *instTest) TestCmpNFlagUnset() {
+func (s *InstructionsTest) TestCmpNFlagUnset() {
 
 	s.cpu.Registers.A = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -2429,7 +2423,7 @@ func (s *instTest) TestCmpNFlagUnset() {
 
 }
 
-func (s *instTest) TestCmpZFlagSet() {
+func (s *InstructionsTest) TestCmpZFlagSet() {
 
 	s.cpu.Registers.A = 0x02
 	s.cpu.Registers.PC = 0x0100
@@ -2453,7 +2447,7 @@ func (s *instTest) TestCmpZFlagSet() {
 
 }
 
-func (s *instTest) TestCmpZFlagUnset() {
+func (s *InstructionsTest) TestCmpZFlagUnset() {
 
 	s.cpu.Registers.A = 0x02
 	s.cpu.Registers.PC = 0x0100
@@ -2477,7 +2471,7 @@ func (s *instTest) TestCmpZFlagUnset() {
 
 }
 
-func (s *instTest) TestCmpCFlagSet() {
+func (s *InstructionsTest) TestCmpCFlagSet() {
 
 	s.cpu.Registers.A = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -2511,7 +2505,7 @@ func (s *instTest) TestCmpCFlagSet() {
 
 }
 
-func (s *instTest) TestCmpCFlagUnset() {
+func (s *InstructionsTest) TestCmpCFlagUnset() {
 
 	s.cpu.Registers.A = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -2537,7 +2531,7 @@ func (s *instTest) TestCmpCFlagUnset() {
 
 // CPX
 
-func (s *instTest) TestCpxImmediate() {
+func (s *InstructionsTest) TestCpxImmediate() {
 
 	s.cpu.Registers.X = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -2551,7 +2545,7 @@ func (s *instTest) TestCpxImmediate() {
 
 }
 
-func (s *instTest) TestCpxZeroPage() {
+func (s *InstructionsTest) TestCpxZeroPage() {
 
 	s.cpu.Registers.X = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -2566,7 +2560,7 @@ func (s *instTest) TestCpxZeroPage() {
 
 }
 
-func (s *instTest) TestCpxAbsolute() {
+func (s *InstructionsTest) TestCpxAbsolute() {
 
 	s.cpu.Registers.X = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -2582,7 +2576,7 @@ func (s *instTest) TestCpxAbsolute() {
 
 }
 
-func (s *instTest) TestCpxNFlagSet() {
+func (s *InstructionsTest) TestCpxNFlagSet() {
 
 	s.cpu.Registers.X = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -2596,7 +2590,7 @@ func (s *instTest) TestCpxNFlagSet() {
 
 }
 
-func (s *instTest) TestCpxNFlagUnset() {
+func (s *InstructionsTest) TestCpxNFlagUnset() {
 
 	s.cpu.Registers.X = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -2610,7 +2604,7 @@ func (s *instTest) TestCpxNFlagUnset() {
 
 }
 
-func (s *instTest) TestCpxZFlagSet() {
+func (s *InstructionsTest) TestCpxZFlagSet() {
 
 	s.cpu.Registers.X = 0x02
 	s.cpu.Registers.PC = 0x0100
@@ -2624,7 +2618,7 @@ func (s *instTest) TestCpxZFlagSet() {
 
 }
 
-func (s *instTest) TestCpxZFlagUnset() {
+func (s *InstructionsTest) TestCpxZFlagUnset() {
 
 	s.cpu.Registers.X = 0x02
 	s.cpu.Registers.PC = 0x0100
@@ -2638,7 +2632,7 @@ func (s *instTest) TestCpxZFlagUnset() {
 
 }
 
-func (s *instTest) TestCpxCFlagSet() {
+func (s *InstructionsTest) TestCpxCFlagSet() {
 
 	s.cpu.Registers.X = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -2652,7 +2646,7 @@ func (s *instTest) TestCpxCFlagSet() {
 
 }
 
-func (s *instTest) TestCpxCFlagUnset() {
+func (s *InstructionsTest) TestCpxCFlagUnset() {
 
 	s.cpu.Registers.X = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -2668,7 +2662,7 @@ func (s *instTest) TestCpxCFlagUnset() {
 
 // CPY
 
-func (s *instTest) TestCpyImmediate() {
+func (s *InstructionsTest) TestCpyImmediate() {
 
 	s.cpu.Registers.Y = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -2682,7 +2676,7 @@ func (s *instTest) TestCpyImmediate() {
 
 }
 
-func (s *instTest) TestCpyZeroPage() {
+func (s *InstructionsTest) TestCpyZeroPage() {
 
 	s.cpu.Registers.Y = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -2697,7 +2691,7 @@ func (s *instTest) TestCpyZeroPage() {
 
 }
 
-func (s *instTest) TestCpyAbsolute() {
+func (s *InstructionsTest) TestCpyAbsolute() {
 
 	s.cpu.Registers.Y = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -2713,7 +2707,7 @@ func (s *instTest) TestCpyAbsolute() {
 
 }
 
-func (s *instTest) TestCpyNFlagSet() {
+func (s *InstructionsTest) TestCpyNFlagSet() {
 
 	s.cpu.Registers.Y = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -2727,7 +2721,7 @@ func (s *instTest) TestCpyNFlagSet() {
 
 }
 
-func (s *instTest) TestCpyNFlagUnset() {
+func (s *InstructionsTest) TestCpyNFlagUnset() {
 
 	s.cpu.Registers.Y = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -2741,7 +2735,7 @@ func (s *instTest) TestCpyNFlagUnset() {
 
 }
 
-func (s *instTest) TestCpyZFlagSet() {
+func (s *InstructionsTest) TestCpyZFlagSet() {
 
 	s.cpu.Registers.Y = 0x02
 	s.cpu.Registers.PC = 0x0100
@@ -2755,7 +2749,7 @@ func (s *instTest) TestCpyZFlagSet() {
 
 }
 
-func (s *instTest) TestCpyZFlagUnset() {
+func (s *InstructionsTest) TestCpyZFlagUnset() {
 
 	s.cpu.Registers.Y = 0x02
 	s.cpu.Registers.PC = 0x0100
@@ -2769,7 +2763,7 @@ func (s *instTest) TestCpyZFlagUnset() {
 
 }
 
-func (s *instTest) TestCpyCFlagSet() {
+func (s *InstructionsTest) TestCpyCFlagSet() {
 
 	s.cpu.Registers.Y = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -2783,7 +2777,7 @@ func (s *instTest) TestCpyCFlagSet() {
 
 }
 
-func (s *instTest) TestCpyCFlagUnset() {
+func (s *InstructionsTest) TestCpyCFlagUnset() {
 
 	s.cpu.Registers.Y = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -2799,7 +2793,7 @@ func (s *instTest) TestCpyCFlagUnset() {
 
 // INC
 
-func (s *instTest) TestIncZeroPage() {
+func (s *InstructionsTest) TestIncZeroPage() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -2813,7 +2807,7 @@ func (s *instTest) TestIncZeroPage() {
 
 }
 
-func (s *instTest) TestIncZeroPageX() {
+func (s *InstructionsTest) TestIncZeroPageX() {
 
 	s.cpu.Registers.X = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -2828,7 +2822,7 @@ func (s *instTest) TestIncZeroPageX() {
 
 }
 
-func (s *instTest) TestIncAbsolute() {
+func (s *InstructionsTest) TestIncAbsolute() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -2843,7 +2837,7 @@ func (s *instTest) TestIncAbsolute() {
 
 }
 
-func (s *instTest) TestIncAbsoluteX() {
+func (s *InstructionsTest) TestIncAbsoluteX() {
 
 	s.cpu.Registers.X = 1
 	s.cpu.Registers.PC = 0x0100
@@ -2859,7 +2853,7 @@ func (s *instTest) TestIncAbsoluteX() {
 
 }
 
-func (s *instTest) TestIncZFlagSet() {
+func (s *InstructionsTest) TestIncZFlagSet() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -2873,7 +2867,7 @@ func (s *instTest) TestIncZFlagSet() {
 
 }
 
-func (s *instTest) TestIncZFlagUnset() {
+func (s *InstructionsTest) TestIncZFlagUnset() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -2887,7 +2881,7 @@ func (s *instTest) TestIncZFlagUnset() {
 
 }
 
-func (s *instTest) TestIncNFlagSet() {
+func (s *InstructionsTest) TestIncNFlagSet() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -2901,7 +2895,7 @@ func (s *instTest) TestIncNFlagSet() {
 
 }
 
-func (s *instTest) TestIncNFlagUnset() {
+func (s *InstructionsTest) TestIncNFlagUnset() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -2917,7 +2911,7 @@ func (s *instTest) TestIncNFlagUnset() {
 
 // INX
 
-func (s *instTest) TestInx() {
+func (s *InstructionsTest) TestInx() {
 
 	s.cpu.Registers.X = 0xfe
 	s.cpu.Registers.PC = 0x0100
@@ -2930,7 +2924,7 @@ func (s *instTest) TestInx() {
 
 }
 
-func (s *instTest) TestInxZFlagSet() {
+func (s *InstructionsTest) TestInxZFlagSet() {
 
 	s.cpu.Registers.X = 0xff // -1
 	s.cpu.Registers.PC = 0x0100
@@ -2943,7 +2937,7 @@ func (s *instTest) TestInxZFlagSet() {
 
 }
 
-func (s *instTest) TestInxZFlagUnset() {
+func (s *InstructionsTest) TestInxZFlagUnset() {
 
 	s.cpu.Registers.X = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -2956,7 +2950,7 @@ func (s *instTest) TestInxZFlagUnset() {
 
 }
 
-func (s *instTest) TestInxNFlagSet() {
+func (s *InstructionsTest) TestInxNFlagSet() {
 
 	s.cpu.Registers.X = 0xfe // -2
 	s.cpu.Registers.PC = 0x0100
@@ -2969,7 +2963,7 @@ func (s *instTest) TestInxNFlagSet() {
 
 }
 
-func (s *instTest) TestInxNFlagUnset() {
+func (s *InstructionsTest) TestInxNFlagUnset() {
 
 	s.cpu.Registers.X = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -2984,7 +2978,7 @@ func (s *instTest) TestInxNFlagUnset() {
 
 // INY
 
-func (s *instTest) TestIny() {
+func (s *InstructionsTest) TestIny() {
 
 	s.cpu.Registers.Y = 0xfe // -2
 	s.cpu.Registers.PC = 0x0100
@@ -2997,7 +2991,7 @@ func (s *instTest) TestIny() {
 
 }
 
-func (s *instTest) TestInyZFlagSet() {
+func (s *InstructionsTest) TestInyZFlagSet() {
 
 	s.cpu.Registers.Y = 0xff // -1
 	s.cpu.Registers.PC = 0x0100
@@ -3010,7 +3004,7 @@ func (s *instTest) TestInyZFlagSet() {
 
 }
 
-func (s *instTest) TestInyZFlagUnset() {
+func (s *InstructionsTest) TestInyZFlagUnset() {
 
 	s.cpu.Registers.Y = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -3023,7 +3017,7 @@ func (s *instTest) TestInyZFlagUnset() {
 
 }
 
-func (s *instTest) TestInyNFlagSet() {
+func (s *InstructionsTest) TestInyNFlagSet() {
 
 	s.cpu.Registers.Y = 0xfe // -2
 	s.cpu.Registers.PC = 0x0100
@@ -3036,7 +3030,7 @@ func (s *instTest) TestInyNFlagSet() {
 
 }
 
-func (s *instTest) TestInyNFlagUnset() {
+func (s *InstructionsTest) TestInyNFlagUnset() {
 
 	s.cpu.Registers.Y = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -3051,7 +3045,7 @@ func (s *instTest) TestInyNFlagUnset() {
 
 // DEC
 
-func (s *instTest) TestDecZeroPage() {
+func (s *InstructionsTest) TestDecZeroPage() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -3065,7 +3059,7 @@ func (s *instTest) TestDecZeroPage() {
 
 }
 
-func (s *instTest) TestDecZeroPageX() {
+func (s *InstructionsTest) TestDecZeroPageX() {
 
 	s.cpu.Registers.X = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -3080,7 +3074,7 @@ func (s *instTest) TestDecZeroPageX() {
 
 }
 
-func (s *instTest) TestDecAbsolute() {
+func (s *InstructionsTest) TestDecAbsolute() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -3095,7 +3089,7 @@ func (s *instTest) TestDecAbsolute() {
 
 }
 
-func (s *instTest) TestDecAbsoluteX() {
+func (s *InstructionsTest) TestDecAbsoluteX() {
 
 	s.cpu.Registers.X = 1
 	s.cpu.Registers.PC = 0x0100
@@ -3111,7 +3105,7 @@ func (s *instTest) TestDecAbsoluteX() {
 
 }
 
-func (s *instTest) TestDecZFlagSet() {
+func (s *InstructionsTest) TestDecZFlagSet() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -3125,7 +3119,7 @@ func (s *instTest) TestDecZFlagSet() {
 
 }
 
-func (s *instTest) TestDecZFlagUnset() {
+func (s *InstructionsTest) TestDecZFlagUnset() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -3139,7 +3133,7 @@ func (s *instTest) TestDecZFlagUnset() {
 
 }
 
-func (s *instTest) TestDecNFlagSet() {
+func (s *InstructionsTest) TestDecNFlagSet() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -3153,7 +3147,7 @@ func (s *instTest) TestDecNFlagSet() {
 
 }
 
-func (s *instTest) TestDecNFlagUnset() {
+func (s *InstructionsTest) TestDecNFlagUnset() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -3169,7 +3163,7 @@ func (s *instTest) TestDecNFlagUnset() {
 
 // DEX
 
-func (s *instTest) TestDex() {
+func (s *InstructionsTest) TestDex() {
 
 	s.cpu.Registers.X = 0x02
 	s.cpu.Registers.PC = 0x0100
@@ -3182,7 +3176,7 @@ func (s *instTest) TestDex() {
 
 }
 
-func (s *instTest) TestDexZFlagSet() {
+func (s *InstructionsTest) TestDexZFlagSet() {
 
 	s.cpu.Registers.X = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -3195,7 +3189,7 @@ func (s *instTest) TestDexZFlagSet() {
 
 }
 
-func (s *instTest) TestDexZFlagUnset() {
+func (s *InstructionsTest) TestDexZFlagUnset() {
 
 	s.cpu.Registers.X = 0x02
 	s.cpu.Registers.PC = 0x0100
@@ -3208,7 +3202,7 @@ func (s *instTest) TestDexZFlagUnset() {
 
 }
 
-func (s *instTest) TestDexNFlagSet() {
+func (s *InstructionsTest) TestDexNFlagSet() {
 
 	s.cpu.Registers.X = 0x00
 	s.cpu.Registers.PC = 0x0100
@@ -3221,7 +3215,7 @@ func (s *instTest) TestDexNFlagSet() {
 
 }
 
-func (s *instTest) TestDexNFlagUnset() {
+func (s *InstructionsTest) TestDexNFlagUnset() {
 
 	s.cpu.Registers.X = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -3236,7 +3230,7 @@ func (s *instTest) TestDexNFlagUnset() {
 
 // DEY
 
-func (s *instTest) TestDey() {
+func (s *InstructionsTest) TestDey() {
 
 	s.cpu.Registers.Y = 0x02
 	s.cpu.Registers.PC = 0x0100
@@ -3249,7 +3243,7 @@ func (s *instTest) TestDey() {
 
 }
 
-func (s *instTest) TestDeyZFlagSet() {
+func (s *InstructionsTest) TestDeyZFlagSet() {
 
 	s.cpu.Registers.Y = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -3262,7 +3256,7 @@ func (s *instTest) TestDeyZFlagSet() {
 
 }
 
-func (s *instTest) TestDeyZFlagUnset() {
+func (s *InstructionsTest) TestDeyZFlagUnset() {
 
 	s.cpu.Registers.Y = 0x02
 	s.cpu.Registers.PC = 0x0100
@@ -3275,7 +3269,7 @@ func (s *instTest) TestDeyZFlagUnset() {
 
 }
 
-func (s *instTest) TestDeyNFlagSet() {
+func (s *InstructionsTest) TestDeyNFlagSet() {
 
 	s.cpu.Registers.Y = 0x00
 	s.cpu.Registers.PC = 0x0100
@@ -3288,7 +3282,7 @@ func (s *instTest) TestDeyNFlagSet() {
 
 }
 
-func (s *instTest) TestDeyNFlagUnset() {
+func (s *InstructionsTest) TestDeyNFlagUnset() {
 
 	s.cpu.Registers.Y = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -3303,7 +3297,7 @@ func (s *instTest) TestDeyNFlagUnset() {
 
 // ASL
 
-func (s *instTest) TestAslAccumulator() {
+func (s *InstructionsTest) TestAslAccumulator() {
 
 	s.cpu.Registers.A = 0x2
 	s.cpu.Registers.PC = 0x0100
@@ -3316,7 +3310,7 @@ func (s *instTest) TestAslAccumulator() {
 
 }
 
-func (s *instTest) TestAslZeroPage() {
+func (s *InstructionsTest) TestAslZeroPage() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -3330,7 +3324,7 @@ func (s *instTest) TestAslZeroPage() {
 
 }
 
-func (s *instTest) TestAslZeroPageX() {
+func (s *InstructionsTest) TestAslZeroPageX() {
 
 	s.cpu.Registers.X = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -3345,7 +3339,7 @@ func (s *instTest) TestAslZeroPageX() {
 
 }
 
-func (s *instTest) TestAslAbsolute() {
+func (s *InstructionsTest) TestAslAbsolute() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -3360,7 +3354,7 @@ func (s *instTest) TestAslAbsolute() {
 
 }
 
-func (s *instTest) TestAslAbsoluteX() {
+func (s *InstructionsTest) TestAslAbsoluteX() {
 
 	s.cpu.Registers.X = 1
 	s.cpu.Registers.PC = 0x0100
@@ -3376,7 +3370,7 @@ func (s *instTest) TestAslAbsoluteX() {
 
 }
 
-func (s *instTest) TestAslCFlagSet() {
+func (s *InstructionsTest) TestAslCFlagSet() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -3389,7 +3383,7 @@ func (s *instTest) TestAslCFlagSet() {
 
 }
 
-func (s *instTest) TestAslCFlagUnset() {
+func (s *InstructionsTest) TestAslCFlagUnset() {
 
 	s.cpu.Registers.A = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -3402,7 +3396,7 @@ func (s *instTest) TestAslCFlagUnset() {
 
 }
 
-func (s *instTest) TestAslZFlagSet() {
+func (s *InstructionsTest) TestAslZFlagSet() {
 
 	s.cpu.Registers.A = 0x00
 	s.cpu.Registers.PC = 0x0100
@@ -3415,7 +3409,7 @@ func (s *instTest) TestAslZFlagSet() {
 
 }
 
-func (s *instTest) TestAslZFlagUnset() {
+func (s *InstructionsTest) TestAslZFlagUnset() {
 
 	s.cpu.Registers.A = 0x02
 	s.cpu.Registers.PC = 0x0100
@@ -3428,7 +3422,7 @@ func (s *instTest) TestAslZFlagUnset() {
 
 }
 
-func (s *instTest) TestAslNFlagSet() {
+func (s *InstructionsTest) TestAslNFlagSet() {
 
 	s.cpu.Registers.A = 0xfe
 	s.cpu.Registers.PC = 0x0100
@@ -3441,7 +3435,7 @@ func (s *instTest) TestAslNFlagSet() {
 
 }
 
-func (s *instTest) TestAslNFlagUnset() {
+func (s *InstructionsTest) TestAslNFlagUnset() {
 
 	s.cpu.Registers.A = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -3456,7 +3450,7 @@ func (s *instTest) TestAslNFlagUnset() {
 
 // LSR
 
-func (s *instTest) TestLsrAccumulator() {
+func (s *InstructionsTest) TestLsrAccumulator() {
 
 	s.cpu.Registers.A = 0x2
 	s.cpu.Registers.PC = 0x0100
@@ -3469,7 +3463,7 @@ func (s *instTest) TestLsrAccumulator() {
 
 }
 
-func (s *instTest) TestLsrZeroPage() {
+func (s *InstructionsTest) TestLsrZeroPage() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -3483,7 +3477,7 @@ func (s *instTest) TestLsrZeroPage() {
 
 }
 
-func (s *instTest) TestLsrZeroPageX() {
+func (s *InstructionsTest) TestLsrZeroPageX() {
 
 	s.cpu.Registers.X = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -3498,7 +3492,7 @@ func (s *instTest) TestLsrZeroPageX() {
 
 }
 
-func (s *instTest) TestLsrAbsolute() {
+func (s *InstructionsTest) TestLsrAbsolute() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -3513,7 +3507,7 @@ func (s *instTest) TestLsrAbsolute() {
 
 }
 
-func (s *instTest) TestLsrAbsoluteX() {
+func (s *InstructionsTest) TestLsrAbsoluteX() {
 
 	s.cpu.Registers.X = 1
 	s.cpu.Registers.PC = 0x0100
@@ -3529,7 +3523,7 @@ func (s *instTest) TestLsrAbsoluteX() {
 
 }
 
-func (s *instTest) TestLsrCFlagSet() {
+func (s *InstructionsTest) TestLsrCFlagSet() {
 
 	s.cpu.Registers.A = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -3542,7 +3536,7 @@ func (s *instTest) TestLsrCFlagSet() {
 
 }
 
-func (s *instTest) TestLsrCFlagUnset() {
+func (s *InstructionsTest) TestLsrCFlagUnset() {
 
 	s.cpu.Registers.A = 0x10
 	s.cpu.Registers.PC = 0x0100
@@ -3555,7 +3549,7 @@ func (s *instTest) TestLsrCFlagUnset() {
 
 }
 
-func (s *instTest) TestLsrZFlagSet() {
+func (s *InstructionsTest) TestLsrZFlagSet() {
 
 	s.cpu.Registers.A = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -3568,7 +3562,7 @@ func (s *instTest) TestLsrZFlagSet() {
 
 }
 
-func (s *instTest) TestLsrZFlagUnset() {
+func (s *InstructionsTest) TestLsrZFlagUnset() {
 
 	s.cpu.Registers.A = 0x02
 	s.cpu.Registers.PC = 0x0100
@@ -3584,7 +3578,7 @@ func (s *instTest) TestLsrZFlagUnset() {
 // func (s *instTest) TestLsrNFlagSet() { }
 // not tested, N bit always set to 0
 
-func (s *instTest) TestLsrNFlagUnset() {
+func (s *InstructionsTest) TestLsrNFlagUnset() {
 
 	s.cpu.Registers.A = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -3599,7 +3593,7 @@ func (s *instTest) TestLsrNFlagUnset() {
 
 // ROL
 
-func (s *instTest) TestRolAccumulator() {
+func (s *InstructionsTest) TestRolAccumulator() {
 
 	s.cpu.Registers.P |= C
 	s.cpu.Registers.A = 0x2
@@ -3613,7 +3607,7 @@ func (s *instTest) TestRolAccumulator() {
 
 }
 
-func (s *instTest) TestRolZeroPage() {
+func (s *InstructionsTest) TestRolZeroPage() {
 
 	s.cpu.Registers.P |= C
 	s.cpu.Registers.PC = 0x0100
@@ -3628,7 +3622,7 @@ func (s *instTest) TestRolZeroPage() {
 
 }
 
-func (s *instTest) TestRolZeroPageX() {
+func (s *InstructionsTest) TestRolZeroPageX() {
 
 	s.cpu.Registers.P |= C
 	s.cpu.Registers.X = 0x01
@@ -3644,7 +3638,7 @@ func (s *instTest) TestRolZeroPageX() {
 
 }
 
-func (s *instTest) TestRolAbsolute() {
+func (s *InstructionsTest) TestRolAbsolute() {
 
 	s.cpu.Registers.P |= C
 	s.cpu.Registers.PC = 0x0100
@@ -3660,7 +3654,7 @@ func (s *instTest) TestRolAbsolute() {
 
 }
 
-func (s *instTest) TestRolAbsoluteX() {
+func (s *InstructionsTest) TestRolAbsoluteX() {
 
 	s.cpu.Registers.P |= C
 	s.cpu.Registers.X = 1
@@ -3677,7 +3671,7 @@ func (s *instTest) TestRolAbsoluteX() {
 
 }
 
-func (s *instTest) TestRolCFlagSet() {
+func (s *InstructionsTest) TestRolCFlagSet() {
 
 	s.cpu.Registers.A = 0x80
 	s.cpu.Registers.PC = 0x0100
@@ -3690,7 +3684,7 @@ func (s *instTest) TestRolCFlagSet() {
 
 }
 
-func (s *instTest) TestRolCFlagUnset() {
+func (s *InstructionsTest) TestRolCFlagUnset() {
 
 	s.cpu.Registers.A = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -3703,7 +3697,7 @@ func (s *instTest) TestRolCFlagUnset() {
 
 }
 
-func (s *instTest) TestRolZFlagSet() {
+func (s *InstructionsTest) TestRolZFlagSet() {
 
 	s.cpu.Registers.A = 0x00
 	s.cpu.Registers.PC = 0x0100
@@ -3716,7 +3710,7 @@ func (s *instTest) TestRolZFlagSet() {
 
 }
 
-func (s *instTest) TestRolZFlagUnset() {
+func (s *InstructionsTest) TestRolZFlagUnset() {
 
 	s.cpu.Registers.A = 0x02
 	s.cpu.Registers.PC = 0x0100
@@ -3729,7 +3723,7 @@ func (s *instTest) TestRolZFlagUnset() {
 
 }
 
-func (s *instTest) TestRolNFlagSet() {
+func (s *InstructionsTest) TestRolNFlagSet() {
 
 	s.cpu.Registers.A = 0xfe
 	s.cpu.Registers.PC = 0x0100
@@ -3742,7 +3736,7 @@ func (s *instTest) TestRolNFlagSet() {
 
 }
 
-func (s *instTest) TestRolNFlagUnset() {
+func (s *InstructionsTest) TestRolNFlagUnset() {
 
 	s.cpu.Registers.A = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -3757,7 +3751,7 @@ func (s *instTest) TestRolNFlagUnset() {
 
 // ROR
 
-func (s *instTest) TestRorAccumulator() {
+func (s *InstructionsTest) TestRorAccumulator() {
 
 	s.cpu.Registers.P |= C
 	s.cpu.Registers.A = 0x08
@@ -3771,7 +3765,7 @@ func (s *instTest) TestRorAccumulator() {
 
 }
 
-func (s *instTest) TestRorZeroPage() {
+func (s *InstructionsTest) TestRorZeroPage() {
 
 	s.cpu.Registers.P |= C
 	s.cpu.Registers.PC = 0x0100
@@ -3786,7 +3780,7 @@ func (s *instTest) TestRorZeroPage() {
 
 }
 
-func (s *instTest) TestRorZeroPageX() {
+func (s *InstructionsTest) TestRorZeroPageX() {
 
 	s.cpu.Registers.P |= C
 	s.cpu.Registers.X = 0x01
@@ -3802,7 +3796,7 @@ func (s *instTest) TestRorZeroPageX() {
 
 }
 
-func (s *instTest) TestRorAbsolute() {
+func (s *InstructionsTest) TestRorAbsolute() {
 
 	s.cpu.Registers.P |= C
 	s.cpu.Registers.PC = 0x0100
@@ -3818,7 +3812,7 @@ func (s *instTest) TestRorAbsolute() {
 
 }
 
-func (s *instTest) TestRorAbsoluteX() {
+func (s *InstructionsTest) TestRorAbsoluteX() {
 
 	s.cpu.Registers.P |= C
 	s.cpu.Registers.X = 1
@@ -3835,7 +3829,7 @@ func (s *instTest) TestRorAbsoluteX() {
 
 }
 
-func (s *instTest) TestRorCFlagSet() {
+func (s *InstructionsTest) TestRorCFlagSet() {
 
 	s.cpu.Registers.A = 0x01
 	s.cpu.Registers.PC = 0x0100
@@ -3848,7 +3842,7 @@ func (s *instTest) TestRorCFlagSet() {
 
 }
 
-func (s *instTest) TestRorCFlagUnset() {
+func (s *InstructionsTest) TestRorCFlagUnset() {
 
 	s.cpu.Registers.A = 0x10
 	s.cpu.Registers.PC = 0x0100
@@ -3861,7 +3855,7 @@ func (s *instTest) TestRorCFlagUnset() {
 
 }
 
-func (s *instTest) TestRorZFlagSet() {
+func (s *InstructionsTest) TestRorZFlagSet() {
 
 	s.cpu.Registers.A = 0x00
 	s.cpu.Registers.PC = 0x0100
@@ -3874,7 +3868,7 @@ func (s *instTest) TestRorZFlagSet() {
 
 }
 
-func (s *instTest) TestRorZFlagUnset() {
+func (s *InstructionsTest) TestRorZFlagUnset() {
 
 	s.cpu.Registers.A = 0x02
 	s.cpu.Registers.PC = 0x0100
@@ -3887,7 +3881,7 @@ func (s *instTest) TestRorZFlagUnset() {
 
 }
 
-func (s *instTest) TestRorNFlagSet() {
+func (s *InstructionsTest) TestRorNFlagSet() {
 
 	s.cpu.Registers.P |= C
 	s.cpu.Registers.A = 0xfe
@@ -3901,7 +3895,7 @@ func (s *instTest) TestRorNFlagSet() {
 
 }
 
-func (s *instTest) TestRorNFlagUnset() {
+func (s *InstructionsTest) TestRorNFlagUnset() {
 
 	s.cpu.Registers.P &^= C
 	s.cpu.Registers.A = 0x01
@@ -3917,7 +3911,7 @@ func (s *instTest) TestRorNFlagUnset() {
 
 // JMP
 
-func (s *instTest) TestJmpAbsolute() {
+func (s *InstructionsTest) TestJmpAbsolute() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -3931,7 +3925,7 @@ func (s *instTest) TestJmpAbsolute() {
 
 }
 
-func (s *instTest) TestJmpIndirect() {
+func (s *InstructionsTest) TestJmpIndirect() {
 
 	s.cpu.Registers.PC = 0x0100
 
@@ -3949,7 +3943,7 @@ func (s *instTest) TestJmpIndirect() {
 
 // JSR
 
-func (s *instTest) TestJsr() {
+func (s *InstructionsTest) TestJsr() {
 
 	s.Run("JSR Test 1", func() {
 		s.cpu.Registers.PC = 0x0100
@@ -3999,7 +3993,7 @@ func (s *instTest) TestJsr() {
 
 // RTS
 
-func (s *instTest) TestRts() {
+func (s *InstructionsTest) TestRts() {
 
 	s.cpu.Registers.PC = 0x0100
 	s.cpu.push16(0x0102)
@@ -4014,7 +4008,7 @@ func (s *instTest) TestRts() {
 
 // BCC
 
-func (s *instTest) TestBcc() {
+func (s *InstructionsTest) TestBcc() {
 
 	s.cpu.Registers.P |= C
 	s.cpu.Registers.PC = 0x0100
@@ -4052,7 +4046,7 @@ func (s *instTest) TestBcc() {
 
 // BCS
 
-func (s *instTest) TestBcs() {
+func (s *InstructionsTest) TestBcs() {
 
 	s.cpu.Registers.P |= C
 	s.cpu.Registers.PC = 0x0100
@@ -4078,7 +4072,7 @@ func (s *instTest) TestBcs() {
 
 // BEQ
 
-func (s *instTest) TestBeq() {
+func (s *InstructionsTest) TestBeq() {
 
 	s.cpu.Registers.P |= Z
 	s.cpu.Registers.PC = 0x0100
@@ -4104,7 +4098,7 @@ func (s *instTest) TestBeq() {
 
 // BMI
 
-func (s *instTest) TestBmi() {
+func (s *InstructionsTest) TestBmi() {
 
 	s.cpu.Registers.P |= N
 	s.cpu.Registers.PC = 0x0100
@@ -4130,7 +4124,7 @@ func (s *instTest) TestBmi() {
 
 // BNE
 
-func (s *instTest) TestBne() {
+func (s *InstructionsTest) TestBne() {
 
 	s.cpu.Registers.P &^= Z
 	s.cpu.Registers.PC = 0x0100
@@ -4156,7 +4150,7 @@ func (s *instTest) TestBne() {
 
 // BPL
 
-func (s *instTest) TestBpl() {
+func (s *InstructionsTest) TestBpl() {
 
 	s.cpu.Registers.P &^= N
 	s.cpu.Registers.PC = 0x0100
@@ -4182,7 +4176,7 @@ func (s *instTest) TestBpl() {
 
 // BVC
 
-func (s *instTest) TestBvc() {
+func (s *InstructionsTest) TestBvc() {
 
 	s.cpu.Registers.P &^= V
 	s.cpu.Registers.PC = 0x0100
@@ -4208,7 +4202,7 @@ func (s *instTest) TestBvc() {
 
 // BVS
 
-func (s *instTest) TestBvs() {
+func (s *InstructionsTest) TestBvs() {
 
 	s.cpu.Registers.P |= V
 	s.cpu.Registers.PC = 0x0100
@@ -4234,7 +4228,7 @@ func (s *instTest) TestBvs() {
 
 // CLC
 
-func (s *instTest) TestClc() {
+func (s *InstructionsTest) TestClc() {
 
 	s.cpu.Registers.P &^= C
 	s.cpu.Registers.PC = 0x0100
@@ -4258,7 +4252,7 @@ func (s *instTest) TestClc() {
 
 // CLD
 
-func (s *instTest) TestCld() {
+func (s *InstructionsTest) TestCld() {
 
 	s.cpu.Registers.P &^= D
 	s.cpu.Registers.PC = 0x0100
@@ -4282,7 +4276,7 @@ func (s *instTest) TestCld() {
 
 // CLI
 
-func (s *instTest) TestCli() {
+func (s *InstructionsTest) TestCli() {
 
 	s.cpu.Registers.P &^= I
 	s.cpu.Registers.PC = 0x0100
@@ -4306,7 +4300,7 @@ func (s *instTest) TestCli() {
 
 // CLV
 
-func (s *instTest) TestClv() {
+func (s *InstructionsTest) TestClv() {
 
 	s.cpu.Registers.P &^= V
 	s.cpu.Registers.PC = 0x0100
@@ -4330,7 +4324,7 @@ func (s *instTest) TestClv() {
 
 // SEC
 
-func (s *instTest) TestSec() {
+func (s *InstructionsTest) TestSec() {
 
 	s.cpu.Registers.P &^= C
 	s.cpu.Registers.PC = 0x0100
@@ -4354,7 +4348,7 @@ func (s *instTest) TestSec() {
 
 // SED
 
-func (s *instTest) TestSed() {
+func (s *InstructionsTest) TestSed() {
 
 	s.cpu.Registers.P &^= D
 	s.cpu.Registers.PC = 0x0100
@@ -4378,7 +4372,7 @@ func (s *instTest) TestSed() {
 
 // SEI
 
-func (s *instTest) TestSei() {
+func (s *InstructionsTest) TestSei() {
 
 	s.cpu.Registers.P &^= I
 	s.cpu.Registers.PC = 0x0100
@@ -4402,7 +4396,7 @@ func (s *instTest) TestSei() {
 
 // BRK
 
-func (s *instTest) TestBrk() {
+func (s *InstructionsTest) TestBrk() {
 
 	s.cpu.Registers.P = 0xff & (^B)
 	s.cpu.Registers.PC = 0x0100
@@ -4423,7 +4417,7 @@ func (s *instTest) TestBrk() {
 
 // RTI
 
-func (s *instTest) TestRti() {
+func (s *InstructionsTest) TestRti() {
 
 	s.cpu.Registers.PC = 0x0100
 	s.cpu.push16(0x0102)
@@ -4441,7 +4435,7 @@ func (s *instTest) TestRti() {
 
 // Irq
 
-func (s *instTest) TestIrq() {
+func (s *InstructionsTest) TestIrq() {
 
 	s.cpu.Registers.P = 0xfb
 	s.cpu.Registers.PC = 0x0100
@@ -4460,7 +4454,7 @@ func (s *instTest) TestIrq() {
 
 // Nmi
 
-func (s *instTest) TestNmi() {
+func (s *InstructionsTest) TestNmi() {
 
 	s.cpu.Registers.P = 0xff
 	s.cpu.Registers.PC = 0x0100
@@ -4479,7 +4473,7 @@ func (s *instTest) TestNmi() {
 
 // Rst
 
-func (s *instTest) TestRst() {
+func (s *InstructionsTest) TestRst() {
 
 	s.cpu.Registers.PC = 0x0100
 

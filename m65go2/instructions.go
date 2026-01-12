@@ -12,128 +12,34 @@ import (
 type OpCode uint8
 
 // Represents addressing modes for the 6502 CPU
+//
+//go:generate stringer -type=AddressingMode -linecomment
 type AddressingMode uint16
 
 const (
-	Accumulator AddressingMode = 1 << iota
-	Immediate
-	Implied
-	ZeroPage
-	ZeroPageX
-	ZeroPageY
-	Absolute
-	AbsoluteX
-	AbsoluteY
-	Indirect
-	IndirectX
-	IndirectY
-	Relative
+	Accumulator AddressingMode = 1 << iota // Accumulator
+	Immediate                              // Immediate
+	Implied                                // Implied
+	ZeroPage                               // ZeroPage
+	ZeroPageX                              // ZeroPageIndexedX
+	ZeroPageY                              // ZeroPageIndexedY
+	Absolute                               // Absolute
+	AbsoluteX                              // AbsoluteIndexedX
+	AbsoluteY                              // AbsoluteIndexedY
+	Indirect                               // Indirect
+	IndirectX                              // IndexedIndirect
+	IndirectY                              // IndirectIndexed
+	Relative                               // Relative
 )
 
+//go:generate stringer -type=ActionMode -linecomment
 type ActionMode uint8
 
 const (
-	ActionValue ActionMode = iota
-	ActionAddress
-	ActionTargetAddress
+	ActionValue         ActionMode = iota // Value
+	ActionAddress                         // Address
+	ActionTargetAddress                   // TargetAddress
 )
-
-func (m AddressingMode) String() string {
-	switch m {
-	case Accumulator:
-		return "Accumulator"
-	case Immediate:
-		return "Immediate"
-	case Implied:
-		return "Implied"
-	case ZeroPage:
-		return "ZeroPage"
-	case ZeroPageX:
-		return "ZeroPageIndexedX"
-	case ZeroPageY:
-		return "ZeroPageIndexedY"
-	case Absolute:
-		return "Absolute"
-	case AbsoluteX:
-		return "AbsoluteIndexedX"
-	case AbsoluteY:
-		return "AbsoluteIndexedY"
-	case Indirect:
-		return "Indirect"
-	case IndirectX:
-		return "IndexedIndirect"
-	case IndirectY:
-		return "IndirectIndexed"
-	case Relative:
-		return "Relative"
-	default:
-		panic(fmt.Sprintf("unknown addressing mode: %d", m))
-	}
-}
-
-func (m ActionMode) String() string {
-	switch m {
-	case ActionValue:
-		return "v"
-	case ActionAddress:
-		return "a"
-	case ActionTargetAddress:
-		return "t"
-	default:
-		panic(fmt.Sprintf("unknown action mode: %d", m))
-	}
-}
-
-func ToAddressingMode(mode string) AddressingMode {
-	var value AddressingMode
-
-	switch mode {
-	case "acc":
-		value = Accumulator
-	case "im":
-		value = Immediate
-	case "imp":
-		value = Implied
-	case "z":
-		value = ZeroPage
-	case "zx":
-		value = ZeroPageX
-	case "zy":
-		value = ZeroPageY
-	case "a":
-		value = Absolute
-	case "ax":
-		value = AbsoluteX
-	case "ay":
-		value = AbsoluteY
-	case "i":
-		value = Indirect
-	case "ix":
-		value = IndirectX
-	case "iy":
-		value = IndirectY
-	case "rel":
-		value = Relative
-	default:
-		panic("unknown addressing mode: " + mode)
-	}
-	return value
-}
-
-func ToActionMode(mode string) ActionMode {
-	var value ActionMode
-	switch mode {
-	case "v":
-		value = ActionValue
-	case "a":
-		value = ActionAddress
-	case "t":
-		value = ActionTargetAddress
-	default:
-		panic("unknown action mode: " + mode)
-	}
-	return value
-}
 
 // Represents an instruction for the 6502 CPU.  The Exec field
 // implements the instruction and returns the total clock cycles to be
@@ -146,17 +52,6 @@ type Instruction struct {
 	Cycles         uint16
 	status         InstructionStatus
 	Exec           func(*M6502) (status InstructionStatus)
-}
-
-func NewInst(mnemonic string, opcode OpCode, addrMode string, actionMode string, cycles uint16) *Instruction {
-	return &Instruction{
-		Mnemonic:       mnemonic,
-		OpCode:         opcode,
-		AddressingMode: ToAddressingMode(addrMode),
-		ActionMode:     ToActionMode(actionMode),
-		Cycles:         cycles,
-		status:         InstructionStatus(0),
-	}
 }
 
 func NewInstruction(mnemonic string, opcode OpCode, addrMode AddressingMode, actionMode ActionMode, cycles uint16) *Instruction {

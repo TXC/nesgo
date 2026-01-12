@@ -13,6 +13,7 @@ type DebugMode uint16
 const (
 	DebugModeInstruction DebugMode = 1 << iota
 	DebugModeCycleDump
+	DebugModeVerbose
 )
 
 func GetStackFrames() []runtime.Frame {
