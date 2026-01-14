@@ -1,8 +1,6 @@
 package nes
 
 import (
-	"testing"
-
 	s "github.com/stretchr/testify/suite"
 	"github.com/txc/nesgo/rp2cgo2"
 )
@@ -17,10 +15,6 @@ func (s *ROMTestSuite) BeforeTest(suiteName, testName string) {
 
 func (s *ROMTestSuite) AfterTest(_, _ string) {
 	s.romf = nil
-}
-
-func TestROMTestSuite(t *testing.T) {
-	s.Run(t, &ROMTestSuite{})
 }
 
 func (s *ROMTestSuite) TestConstant() {

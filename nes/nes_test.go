@@ -1,8 +1,6 @@
 package nes
 
 import (
-	"testing"
-
 	s "github.com/stretchr/testify/suite"
 	"github.com/txc/nesgo/rp2cgo2"
 )
@@ -22,10 +20,6 @@ func (s *mirroringTest) AfterTest(_, _ string) {
 }
 
 // endregion mirroringTest
-
-func TestMirroringSuite(t *testing.T) {
-	s.Run(t, &mirroringTest{})
-}
 
 func (s *mirroringTest) TestVerticalMirroring() {
 	s.ppu.Nametable.SetTables(0, 1, 0, 1)

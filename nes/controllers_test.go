@@ -1,14 +1,8 @@
 package nes
 
 import (
-	"testing"
-
 	s "github.com/stretchr/testify/suite"
 )
-
-func TestControllersTestSuite(t *testing.T) {
-	s.Run(t, &ControllersTestSuite{})
-}
 
 type ControllersTestSuite struct {
 	s.Suite
