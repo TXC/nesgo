@@ -1,4 +1,4 @@
-// +build js
+//go:build js && !(sdl || azul3d)
 
 package nes
 
@@ -31,8 +31,6 @@ func (audio *JSAudio) Run() {
 	data := buffer.Call("getChannelData", 0)
 
 	slice := make([]float32, data.Length())
-	buf := js.TypedArrayOf(slice)
-	defer buf.Release()
 
 	onendedCallback := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		go func() {
@@ -46,7 +44,10 @@ func (audio *JSAudio) Run() {
 		for i := 0; i < audio.sampleSize; i++ {
 			slice[i] = float32(<-audio.input) / float32(0x7fff)
 		}
-		buffer.Call("copyToChannel", buf, 0)
+
+		for i := 0; i < audio.sampleSize; i++ {
+			data.SetIndex(i, js.ValueOf(slice[i]))
+		}
 
 		source := ctx.Call("createBufferSource")
 		source.Set("buffer", buffer)

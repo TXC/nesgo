@@ -1,9 +1,8 @@
-// +build js
+//go:build js && !(sdl || azul3d)
 
 package nes
 
 import (
-	"reflect"
 	"strconv"
 	"sync"
 	"syscall/js"
@@ -197,15 +196,7 @@ func (video *JSVideo) Run() {
 
 	buf := make([]uint8, data.Length())
 
-	var buf32 []uint32
-	xh := *(*reflect.SliceHeader)(unsafe.Pointer(&buf))
-	size := int(unsafe.Sizeof(buf32[0]))
-	xh.Len /= size
-	xh.Cap /= size
-	buf32 = *(*[]uint32)(unsafe.Pointer(&xh))
-
-	buf8 := js.TypedArrayOf(buf)
-	defer buf8.Release()
+	buf32 := unsafe.Slice((*uint32)(unsafe.Pointer(&buf[0])), len(buf)/4)
 
 	for {
 		colors := <-video.input
@@ -215,7 +206,7 @@ func (video *JSVideo) Run() {
 		}
 		video.framePool.Put(colors)
 
-		data.Call("set", buf8)
+		js.CopyBytesToJS(data, buf)
 		ctx.Call("putImageData", img, 0, 0)
 
 		if video.overscan {
