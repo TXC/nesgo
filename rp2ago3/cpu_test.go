@@ -1,33 +1,27 @@
 package rp2ago3
 
 import (
-	"testing"
-
 	s "github.com/stretchr/testify/suite"
 )
 
-func TestCpuSuite(t *testing.T) {
-	s.Run(t, &baseCpuTest{})
-}
-
-// region baseCpuTest
-type baseCpuTest struct {
+// region cpuTest
+type cpuTest struct {
 	s.Suite
 	cpu *RP2A03
 }
 
-func (s *baseCpuTest) BeforeTest(suiteName, testName string) {
+func (s *cpuTest) BeforeTest(suiteName, testName string) {
 	s.cpu = NewRP2A03(1789773)
 	s.cpu.Reset()
 }
 
-func (s *baseCpuTest) AfterTest(_, _ string) {
+func (s *cpuTest) AfterTest(_, _ string) {
 	s.cpu = nil
 }
 
-// endregion baseCpuTest
+// endregion cpuTest
 
-func (s *baseCpuTest) TestStore() {
+func (s *cpuTest) TestStore() {
 	s.cpu.APU.Pulse1.Registers[0] = 0xde
 	s.cpu.Memory.Store(0x4000, 0xff)
 
@@ -70,7 +64,7 @@ func (ppu *FakePPU) Store(address uint16, value uint8) (oldValue uint8) {
 	return
 }
 
-func (s *baseCpuTest) TestDMA() {
+func (s *cpuTest) TestDMA() {
 	ppu := &FakePPU{}
 	s.cpu.Memory.AddMappings(ppu, CPU)
 	for address := uint32(0xff00); address <= 0xffff; address++ {

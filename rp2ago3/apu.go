@@ -1,88 +1,147 @@
 package rp2ago3
 
-import "github.com/txc/nesgo/m65go2"
+import (
+	"github.com/txc/nesgo/m65go2"
+)
 
 type Control uint8
 type Status uint8
 
+//go:generate stringer -type=PulseFlag
 type PulseFlag uint32
 
+// Pulse channel flags
 const (
+	// $4000 / $4004 - Bit 7-6
 	Duty PulseFlag = 1 << iota
+	// $4000 / $4004 - Bit 5
 	PulseEnvelopeLoopLengthCounterHalt
+	// $4000 / $4004 - Bit 4
 	PulseConstantVolume
+	// $4000 / $4004 - Bit 3-0
 	PulseVolumeEnvelope
+	// $4001 / $4005 - Bit 7
 	SweepEnabled
+	// $4001 / $4005 - Bit 6-4
 	SweepPeriod
+	// $4001 / $4005 - Bit 3
 	SweepNegate
+	// $4001 / $4005 - Bit 2-0
 	SweepShift
+	// $4002 / $4006 - 1 byte
 	PulseTimerLow
+	// $4002 / $4006 - Bit 7-3
 	PulseLengthCounterLoad
+	// $4002 / $4006 - Bit 2-0
 	PulseTimerHigh
 )
 
+//go:generate stringer -type=TriangleFlag -linecomment
 type TriangleFlag uint32
 
+// Triangle channel flags
 const (
-	LengthCounterHaltLinearCounterControl = 1 << iota
+	// $4008 - Bit 7
+	LengthCounterHaltLinearCounterControl TriangleFlag = 1 << iota
+	// $4008 - Bit 6-0
 	LinearCounterLoad
+	// $400A - 1 byte (bits 7-0)
 	TriangleTimerLow
+	// $400B - bits 7-3
 	TriangleLengthCounterLoad
+	// $400B - bits 2-0
 	TriangleTimerHigh
 )
 
+//go:generate stringer -type=NoiseFlag -linecomment
 type NoiseFlag uint32
 
+// Noise channel flags
 const (
+	// $400C - bit 5
 	NoiseEnvelopeLoopLengthCounterHalt NoiseFlag = 1 << iota
+	// $400C - bit 4
 	NoiseConstantVolume
+	// $400C - bit 3-0
 	NoiseVolumeEnvelope
+	// $400E - bit 7
 	LoopNoise
+	// $400E - bit 3-0
 	NoisePeriod
+	// $400F - bit 7-3
 	NoiseLengthCounterLoad
 )
 
+//go:generate stringer -type=DMCFlag -linecomment
 type DMCFlag uint32
 
+// DMC channel flags
 const (
+	// $4010 - bit 7
 	IRQEnable DMCFlag = 1 << iota
+	// $4010 - bit 6
 	Loop
+	// $4010 - bit 3-0
 	Frequency
+	// $4011 - bit 6-0
 	LoadCounter
+	// $4012 - bit 7-0
 	SampleAddress
+	// $4013 - bit 7-0
 	SampleLength
 )
 
+//go:generate stringer -type=ControlFlag -linecomment
 type ControlFlag uint8
 
+// Control flags - Write to $4015
 const (
+	// $4015 - bit 0
 	EnablePulseChannel1 ControlFlag = 1 << iota
+	// $4015 - bit 1
 	EnablePulseChannel2
+	// $4015 - bit 2
 	EnableTriangle
+	// $4015 - bit 3
 	EnableNoise
+	// $4015 - bit 4
 	EnableDMC
 	_
 	_
 	_
 )
 
+//go:generate stringer -type=StatusFlag -linecomment
 type StatusFlag uint8
 
+// Status flags - Read from $4015
 const (
+	// $4015 - bit 0
 	Pulse1LengthCounterNotZero StatusFlag = 1 << iota
+	// $4015 - bit 1
 	Pulse2LengthCounterNotZero
+	// $4015 - bit 2
 	TriangleLengthCounterNotZero
+	// $4015 - bit 3
 	NoiseLengthCounterNotZero
+	// $4015 - bit 4
 	DMCActive
+	// $4015 - bit 5 - Open Bus, contains value from the last cycle that didn't read $4015
 	_
+	// $4015 - bit 6
 	FrameInterrupt
+	// $4015 - bit 7
 	DMCInterrupt
 )
 
+//go:generate stringer -type=FrameCounterFlag -linecomment
 type FrameCounterFlag uint8
 
+// Frame counter flags
 const (
+	// $4017 - bit 7
 	IRQInhibit FrameCounterFlag = 1 << iota
+	// $4017 - bit 6
 	Mode
 )
 
@@ -109,6 +168,7 @@ type Registers struct {
 	Status  Status
 }
 
+// region APU
 type APU struct {
 	Muted     bool      `json:"-"`
 	Registers Registers `json:"APURegisters"`
@@ -192,11 +252,11 @@ func NewAPU(mem m65go2.Memory, targetCycles uint64, interrupt func(bool)) *APU {
 		},
 	}
 
-	for i := 0; i < len(apu.pulseLUT); i++ {
+	for i := range len(apu.pulseLUT) {
 		apu.pulseLUT[i] = 95.52 / (8128.0/float64(i) + 100.0)
 	}
 
-	for i := 0; i < len(apu.tndLUT); i++ {
+	for i := range len(apu.tndLUT) {
 		apu.tndLUT[i] = 163.67 / (24329.0/float64(i) + 100.0)
 	}
 
@@ -470,6 +530,9 @@ func (apu *APU) Execute() (sample int16, haveSample bool) {
 	return
 }
 
+// endregion APU
+
+// region Pulse
 type Pulse struct {
 	Muted     bool `json:"-"`
 	Enabled   bool
@@ -657,6 +720,10 @@ func (pulse *Pulse) ClockSweepUnit() {
 	}
 }
 
+// endregion Pulse
+
+// region Triangle
+
 type Triangle struct {
 	Muted     bool `json:"-"`
 	Enabled   bool
@@ -782,6 +849,9 @@ func (triangle *Triangle) ClockSequencer() {
 	triangle.Sequencer.Clock()
 }
 
+// endregion Triangle
+
+// region Noise
 type Noise struct {
 	Muted     bool `json:"-"`
 	Enabled   bool
@@ -917,6 +987,10 @@ func (noise *Noise) Sample() (sample int16) {
 
 	return
 }
+
+// endregion Noise
+
+// region DMC
 
 type DMC struct {
 	Muted     bool `json:"-"`
@@ -1090,6 +1164,10 @@ func (dmc *DMC) Sample() (sample int16) {
 	return sample
 }
 
+// endregion DMC
+
+// region Frame Counter
+
 type FrameCounter struct {
 	Register uint8
 	Step     uint8
@@ -1171,6 +1249,10 @@ func (frameCounter *FrameCounter) Clock() (changed bool, newStep uint8) {
 	return
 }
 
+// endregion Frame Counter
+
+// region APU Components
+// region Sequencer
 type Sequencer struct {
 	Values []uint8
 	Index  int
@@ -1197,6 +1279,9 @@ func (sequencer *Sequencer) Reset() {
 	sequencer.Output = 0
 }
 
+// endregion Sequencer
+
+// region LinearCounter
 type LinearCounter struct {
 	Control     bool
 	Halt        bool
@@ -1227,6 +1312,9 @@ func (linearCounter *LinearCounter) Reset() {
 	linearCounter.ReloadValue = 0
 }
 
+// endregion LinearCounter
+
+// region SweepUnit
 type SweepUnit struct {
 	Enabled bool
 	Reload  bool
@@ -1257,6 +1345,9 @@ func (sweepUnit *SweepUnit) Clock() (adjustPeriod bool) {
 	return
 }
 
+// endregion SweepUnit
+
+// region Envelope
 type Envelope struct {
 	Start   bool
 	Loop    bool
@@ -1285,6 +1376,9 @@ func (envelope *Envelope) Clock() {
 	}
 }
 
+// endregion Envelope
+
+// region Divider
 type Divider struct {
 	Counter  int16
 	Period   int16
@@ -1319,3 +1413,7 @@ func (divider *Divider) Reload() {
 		divider.Counter *= 2
 	}
 }
+
+// endregion Divider
+
+// endregion APU Components
