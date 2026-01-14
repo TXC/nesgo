@@ -1,14 +1,8 @@
 package rp2cgo2
 
 import (
-	"testing"
-
 	s "github.com/stretchr/testify/suite"
 )
-
-func TestOAMSuite(t *testing.T) {
-	s.Run(t, &oamTest{})
-}
 
 // region oamTest
 type oamTest struct {

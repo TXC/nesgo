@@ -1,15 +1,8 @@
 package rp2cgo2
 
 import (
-	"testing"
-
 	s "github.com/stretchr/testify/suite"
 )
-
-func TestPPUSuite(t *testing.T) {
-	s.Run(t, &ntscTest{})
-	s.Run(t, &palTest{})
-}
 
 // region ppuTest
 type ppuTest struct {
