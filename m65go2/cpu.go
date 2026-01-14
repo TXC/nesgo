@@ -22,17 +22,6 @@ const (
 	N                    // negative flag
 )
 
-// The 6502's registers, all registers are 8-bit values except for PC
-// which is 16-bits.
-type Registers struct {
-	A  uint8  // accumulator
-	X  uint8  // index register X
-	Y  uint8  // index register Y
-	P  Status // processor status
-	SP uint8  // stack pointer
-	PC uint16 // program counter
-}
-
 func (s *Status) String() string {
 	var flags = []string{".", ".", ".", ".", ".", ".", ".", "."}
 	if *s&N != 0 {
@@ -61,6 +50,17 @@ func (s *Status) String() string {
 	}
 
 	return strings.Join(flags, "")
+}
+
+// The 6502's registers, all registers are 8-bit values except for PC
+// which is 16-bits.
+type Registers struct {
+	A  uint8  // accumulator
+	X  uint8  // index register X
+	Y  uint8  // index register Y
+	P  Status // processor status
+	SP uint8  // stack pointer
+	PC uint16 // program counter
 }
 
 // Creates a new set of Registers.  All registers are initialized to

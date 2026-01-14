@@ -1,10 +1,10 @@
 package m65go2
 
 import (
-	"reflect"
 	"testing"
 
 	s "github.com/stretchr/testify/suite"
+	"github.com/txc/nesgo/utils"
 )
 
 func TestSuite(t *testing.T) {
@@ -93,30 +93,18 @@ func TestSuite(t *testing.T) {
 		&InterruptTest{},
 		&DecimalTest{},
 	}
-
-	for _, suite := range tests {
-		var suiteName string
-		if t := reflect.TypeOf(suite); t.Kind() == reflect.Pointer {
-			suiteName = t.Elem().Name()
-		} else {
-			suiteName = t.Name()
-		}
-
-		t.Run(suiteName, func(sub *testing.T) {
-			s.Run(sub, suite)
-		})
-	}
+	utils.RunSuiteTests(t, tests)
 }
 
 // region baseTest
 type baseTest struct {
-	s.Suite
+	utils.CommonTest
 	cpu *M6502
 }
 
-func (s *baseTest) SetupSuite(suiteName, testName string) {}
+//func (s *baseTest) SetupSuite(suiteName, testName string) {}
 
-func (s *baseTest) TearDownSuite(suiteName, testName string) {}
+//func (s *baseTest) TearDownSuite(suiteName, testName string) {}
 
 func (s *baseTest) BeforeTest(suiteName, testName string) {
 	s.cpu = NewM6502(NewBasicMemory(DefaultMemorySize))
@@ -132,18 +120,6 @@ func (s *baseTest) SetupSubTest() {
 	s.cpu.Reset()
 }
 
-func (s *baseTest) TearDownSubTest() {
-}
-
-func (s *baseTest) Log(args ...any) { s.T().Log(args...) }
-
-func (s *baseTest) Logf(format string, args ...any) { s.T().Logf(format, args...) }
-
-// SkipShort skips the test if running in short mode
-func (s *baseTest) SkipShort() {
-	if testing.Short() {
-		s.T().Skip("Skipping trace test in short mode")
-	}
-}
+//func (s *baseTest) TearDownSubTest() {}
 
 // endregion baseTest
