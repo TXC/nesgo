@@ -1,13 +1,13 @@
 # This Makefile exists to help make a Mac OS X app bundle.  If you
-# want to build the regular nintengo binary, just use 'go build'.
+# want to build the regular nesgo binary, just use 'go build'.
 
-all: nintengo Nintengo.app
+all: nesgo Nesgo.app
 
-Nintengo.app:
-	cp nintengo Nintengo.app/Contents/MacOS
+Nesgo.app:
+	cp nesgo Nesgo.app/Contents/MacOS
 
-nintengo:
+nesgo:
 	go generate ./...
 	go build
 
-.PHONY: nintengo Nintengo.app
+.PHONY: nesgo Nesgo.app

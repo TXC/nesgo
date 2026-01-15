@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-	<title>nintengo</title>
+	<title>nesgo</title>
     </head>
     <body>
 	<script src="wasm_exec.js"></script>
@@ -15,7 +15,7 @@
 
 	 const go = new Go();
 	 let mod, inst;
-	 WebAssembly.instantiateStreaming(fetch("nintengo.wasm"), go.importObject).then((result) => {
+	 WebAssembly.instantiateStreaming(fetch("nesgo.wasm"), go.importObject).then((result) => {
 	     mod = result.module;
 	     inst = result.instance;
 	     go.run(inst)

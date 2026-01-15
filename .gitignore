@@ -27,6 +27,8 @@ _testmain.go
 
 TAGS
 
+tmp/*
+
 *.wasm
 
 *.out

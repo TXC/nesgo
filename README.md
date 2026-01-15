@@ -1,7 +1,7 @@
-nintengo
+nesgo
 ========
 
-[![Build Status](https://travis-ci.org/nwidger/nintengo.svg?branch=master)](https://travis-ci.org/nwidger/nintengo)
+[![Build Status](https://travis-ci.org/nwidger/nesgo.svg?branch=master)](https://travis-ci.org/nwidger/nesgo)
 
 An NES emulator written in Go
 
@@ -21,6 +21,14 @@ An NES emulator written in Go
 
 ## Build
 
+### Available build flags
+| Flags | Description |
++-------+-------------+
+| `js` | JavaScript frontend |
+| `sdl` | SDL frontend |
+| `apudebug` | Debug APU |
+| `azul3d` | Utilize Azul3D frontend |
+
 ### Mac OS X/Linux/Windows
 
 1. Install Azul3D by following the official
@@ -33,17 +41,17 @@ An NES emulator written in Go
 
 WebAssembly support requires Go 1.11 or higher.
 
-1. Download nintengo
+1. Download nesgo
 
    ```
    go get -d -u github.com/txc/nesgo
    ```
 
-2. Build `wasm/nintengo.wasm`
+2. Build `wasm/nesgo.wasm`
 
    ```
    cd $GOPATH/src/github.com/txc/nesgo
-   GOOS=js GOARCH=wasm go build -o wasm/nintengo.wasm .
+   GOOS=js GOARCH=wasm go build -o wasm/nesgo.wasm .
    ```
 
 3. Start web server running on port 8000
@@ -53,13 +61,13 @@ WebAssembly support requires Go 1.11 or higher.
    go run serve.go -http :8000
    ```
 
-3. Open `http://localhost:8000` in your browser.  Press the `Choose
-   File` button and select a `.nes` file to run.
+3. Open `http://localhost:8000` in your browser.
+   Press the `Choose File` button and select a `.nes` file to run.
 
 ## Usage
 
 ```
-nintengo OPTIONS FILE
+nesgo OPTIONS FILE
 FILE can be a .nes file or a .nes file inside a .zip archive
   -audio-recorder="": recorder to use: none | wav
   -connect="": Connect to address as slave, <rom-file> will be ignored (e.g., 'localhost:8080')
@@ -142,20 +150,20 @@ extension.
 
 ## Netplay
 
-Nintengo includes two-player netplay support using the `-listen` and
+Nesgo includes two-player netplay support using the `-listen` and
 `-connect` command-line arguments.  To use, player one launches
-nintengo and tells it to listen for incoming connections using the
+nesgo and tells it to listen for incoming connections using the
 `-listen` flag:
 
 ```
-nintengo -listen=:8080 FILE
+nesgo -listen=:8080 FILE
 ```
 
 Player two then connects to player one using the `-connect` flag,
 providing the server's host/port:
 
 ```
-nintengo -connect=192.168.1.110:8080
+nesgo -connect=192.168.1.110:8080
 ```
 
 Note that player two does not need to provide a `FILE` argument.

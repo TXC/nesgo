@@ -217,7 +217,11 @@
 				<key>ActionParameters</key>
 				<dict>
 					<key>source</key>
-					<string>on run {input, parameters}	set p to POSIX path of (path to me)	return {p, POSIX path of input}end run</string>
+					<string>on run {input, parameters}
+	set p to POSIX path of (path to me)
+	return {p, POSIX path of input}
+end run
+</string>
 				</dict>
 				<key>BundleIdentifier</key>
 				<string>com.apple.Automator.RunScript</string>
@@ -332,7 +336,7 @@ end run</string>
 				<dict>
 					<key>COMMAND_STRING</key>
 					<string>echo "$1" &gt; /tmp/deleteme
-"${1}Contents/MacOS/nintengo" "$2"</string>
+"${1}Contents/MacOS/nesgo" "$2"</string>
 					<key>CheckedForUserDefaultShell</key>
 					<true/>
 					<key>inputMethod</key>
