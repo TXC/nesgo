@@ -161,7 +161,7 @@ func (mmc3 *MMC3) Mappings(which rp2ago3.Mapping) (fetch, store []uint16) {
 			}
 		}
 	case rp2ago3.CPU:
-		if mmc3.RAMBanks > 0 {
+		if mmc3.PRGRamSize > 0 {
 			// PRG RAM bank
 			for i := uint32(0x6000); i <= 0x7fff; i++ {
 				store = append(store, uint16(i))
@@ -243,7 +243,8 @@ func (mmc3 *MMC3) Fetch(address uint16) (value uint8) {
 	case address >= 0x6000 && address <= 0x7fff:
 		if chipEnable, _ := mmc3.prgRAMProtect(); chipEnable {
 			index := address & 0x1fff
-			value = mmc3.WRAMBanks[0][index]
+			//value = mmc3.WRAMBanks[0][index]
+			value = mmc3.PRGRamData[index]
 		}
 	//case address >= 0x8000 && address <= 0xffff:
 	case address >= 0x8000:
@@ -311,7 +312,8 @@ func (mmc3 *MMC3) Store(address uint16, value uint8) (oldValue uint8) {
 	case address >= 0x6000 && address <= 0x7fff:
 		if _, allowWrites := mmc3.prgRAMProtect(); allowWrites {
 			index := address & 0x1fff
-			mmc3.WRAMBanks[0][index] = value
+			//mmc3.WRAMBanks[0][index] = value
+			mmc3.PRGRamData[index] = value
 		}
 	// Bank select (even) / Bank data (odd)
 	case address >= 0x8000 && address <= 0x9fff:

@@ -1,3 +1,4 @@
+// MMC1 Mapper (INES Mapper 1)
 package nes
 
 import (
@@ -65,16 +66,19 @@ func NewMMC1(romf *ROMFile) *MMC1 {
 
 	// divide 8KB CHR banks into 4KB banks since we may be
 	// swapping 4KB banks
-	if romf.CHRBanks > 0 {
-		vromBanks := make([][]uint8, uint16(romf.CHRBanks)*2)
+	if romf.CHRRomSize > 0 {
+		banks := romf.CHRRomSize / 0x1000
+		vromBanks := make([][]uint8, banks)
 
-		for n := 0; n < int(romf.CHRBanks); n++ {
-			vromBanks[2*n] = romf.VROMBanks[n][0x000:0x1000]
-			vromBanks[(2*n)+1] = romf.VROMBanks[n][0x1000:0x2000]
+		for n := 0; n < int(banks); n++ {
+			vromBanks[n] = romf.CHRRomData[n*0x1000 : (n+1)*0x1000]
+			//vromBanks[2*n] = romf.VROMBanks[n][0x000:0x1000]
+			//vromBanks[(2*n)+1] = romf.VROMBanks[n][0x1000:0x2000]
 		}
 
 		romf.VROMBanks = vromBanks
-		romf.CHRBanks *= 2
+		//romf.CHRBanks *= 2
+		romf.CHRBanks = uint16(banks)
 	}
 
 	mmc1.Registers.Reset()
@@ -93,7 +97,7 @@ func (mmc1 *MMC1) Mappings(which rp2ago3.Mapping) (fetch, store []uint16) {
 
 	switch which {
 	case rp2ago3.PPU:
-		if mmc1.CHRBanks > 0 {
+		if mmc1.CHRRomSize > 0 {
 			// CHR bank 1
 			for i := uint32(0x0000); i <= 0x0fff; i++ {
 				fetch = append(fetch, uint16(i))
@@ -107,7 +111,7 @@ func (mmc1 *MMC1) Mappings(which rp2ago3.Mapping) (fetch, store []uint16) {
 			}
 		}
 	case rp2ago3.CPU:
-		if mmc1.RAMBanks > 0 {
+		if mmc1.PRGRamSize > 0 {
 			// PRG RAM bank
 			for i := uint32(0x6000); i <= 0x7fff; i++ {
 				store = append(store, uint16(i))
@@ -115,7 +119,7 @@ func (mmc1 *MMC1) Mappings(which rp2ago3.Mapping) (fetch, store []uint16) {
 			}
 		}
 
-		if mmc1.PRGBanks > 0 {
+		if mmc1.PRGRomSize > 0 {
 			// PRG bank 1
 			for i := uint32(0x8000); i <= 0xbfff; i++ {
 				store = append(store, uint16(i))
@@ -154,11 +158,17 @@ func (mmc1 *MMC1) Fetch(address uint16) (value uint8) {
 			if mmc1.CHRBanks > 0 {
 				value = mmc1.VROMBanks[lower][index]
 			}
+			//if mmc1.CHRRomSize > 0 {
+			//	value = mmc1.CHRROMData[index]
+			//}
 		// CHR bank 2
 		case address >= 0x1000 && address <= 0x1fff:
 			if mmc1.CHRBanks > 0 {
 				value = mmc1.VROMBanks[upper][index]
 			}
+			//if mmc1.CHRRomSize > 0 {
+			//	value = mmc1.CHRROMData[index]
+			//}
 		}
 	// CPU only
 	//case address >= 0x6000 && address <= 0xffff:
@@ -169,7 +179,12 @@ func (mmc1 *MMC1) Fetch(address uint16) (value uint8) {
 		// PRG RAM bank
 		case address >= 0x6000 && address <= 0x7fff:
 			index := address & 0x1fff
-			value = mmc1.WRAMBanks[0][index]
+			//value = mmc1.WRAMBanks[0][index]
+			if mmc1.Battery {
+				value = mmc1.PRGNvRamData[index]
+			} else {
+				value = mmc1.PRGRamData[index]
+			}
 		// PRG bank 1
 		case address >= 0x8000 && address <= 0xbfff:
 			index := address & 0x3fff
@@ -217,7 +232,12 @@ func (mmc1 *MMC1) Store(address uint16, value uint8) (oldValue uint8) {
 	// PRG RAM bank
 	case address >= 0x6000 && address <= 0x7fff:
 		index := address & 0x1fff
-		mmc1.WRAMBanks[0][index] = value
+		//mmc1.WRAMBanks[0][index] = value
+		if mmc1.Battery {
+			mmc1.PRGNvRamData[index] = value
+		} else {
+			mmc1.PRGRamData[index] = value
+		}
 	// PRG banks 1 & 2
 	//case address >= 0x8000 && address <= 0xffff:
 	case address >= 0x8000:

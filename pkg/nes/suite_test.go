@@ -11,7 +11,8 @@ func TestSuite(t *testing.T) {
 	tests := []s.TestingSuite{
 		&ControllersTestSuite{},
 		&mirroringTest{},
-		&ROMTestSuite{},
+		&iNESRomTestSuite{},
+		&NES20RomTestSuite{},
 	}
 	utils.RunSuiteTests(t, tests)
 }
