@@ -16,6 +16,7 @@ import (
 	//"github.com/txc/nesgo/nes/rom/mapper"
 	"github.com/txc/nesgo/pkg/rp2ago3"
 	"github.com/txc/nesgo/pkg/rp2cgo2"
+	"github.com/txc/nesgo/pkg/utils"
 )
 
 func init() {
@@ -45,10 +46,10 @@ const (
 type CartType uint8
 
 const (
-	CartType_NES          CartType = iota // Nintendo Entertainment System
-	CartType_VsSystem                     // Nintendo Vs. System
-	CartType_Playchoice10                 // Nintendo Playchoice-10
-	CartType_Extended                     // Extended Console Type
+	CartType_NES          CartType = iota // NES
+	CartType_VsSystem                     // VsSystem
+	CartType_Playchoice10                 // PC10
+	CartType_Extended                     // Extended
 )
 
 //go:generate stringer -type=Format
@@ -118,6 +119,9 @@ type ROMFile struct {
 	//VRAMData        []uint8
 	irq       func(state bool)
 	setTables func(t0, t1, t2, t3 int)
+	nes       *NES
+	log       *utils.Logger
+	_debugLog bool
 }
 
 type ROM interface {
@@ -128,6 +132,10 @@ type ROM interface {
 	LoadBattery()
 	SaveBattery() (err error)
 	GetROMFile() *ROMFile
+	SetConsole(nes *NES)
+	GetConsole() *NES
+	GetDebug() bool
+	SetDebug(enable bool)
 }
 
 func getBuf(filename string) (buf []byte, suffix string, err error) {
@@ -179,18 +187,18 @@ func getBuf(filename string) (buf []byte, suffix string, err error) {
 	return
 }
 
-func NewROM(filename string, irq func(state bool), setTables func(t0, t1, t2, t3 int)) (rom ROM, err error) {
+func NewROM(filename string, log *utils.Logger, irq func(state bool), setTables func(t0, t1, t2, t3 int)) (rom ROM, err error) {
 	buf, suffix, err := getBuf(filename)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return NewROMFromBuf(buf, filename, suffix, irq, setTables)
+	return NewROMFromBuf(buf, filename, suffix, log, irq, setTables)
 }
 
-func NewROMFromBuf(buf []byte, filename, suffix string, irq func(state bool), setTables func(t0, t1, t2, t3 int)) (rom ROM, err error) {
-	romf, err := NewROMFile(buf)
+func NewROMFromBuf(buf []byte, filename, suffix string, log *utils.Logger, irq func(state bool), setTables func(t0, t1, t2, t3 int)) (rom ROM, err error) {
+	romf, err := NewROMFileLogger(buf, log)
 
 	if err != nil {
 		return
@@ -202,29 +210,15 @@ func NewROMFromBuf(buf []byte, filename, suffix string, irq func(state bool), se
 	romf.setTables(romf.Tables())
 	romf.Gamename = strings.TrimSuffix(filename, suffix)
 
-	switch romf.Mapper {
-	case 0x00, 0x40, 0x41:
-		rom = NewNROM(romf)
-	case 0x01:
-		rom = NewMMC1(romf)
-	case 0x02, 0x42:
-		rom = NewUNROM(romf)
-	case 0x03, 0x43:
-		rom = NewCNROM(romf)
-	case 0x04:
-		rom = NewMMC3(romf)
-	case 0x07:
-		rom = NewANROM(romf)
-	case 0x09:
-		rom = NewMMC2(romf)
-	default:
-		err = fmt.Errorf("Unsupported mapper type %v", romf.Mapper)
-	}
-
+	rom, err = romf.GetMapper()
 	return
 }
 
 func NewROMFile(buf []byte) (romf *ROMFile, err error) {
+	return NewROMFileLogger(buf, nil)
+}
+
+func NewROMFileLogger(buf []byte, log *utils.Logger) (romf *ROMFile, err error) {
 	var offset int
 
 	if len(buf) < 16 {
@@ -237,7 +231,10 @@ func NewROMFile(buf []byte) (romf *ROMFile, err error) {
 		return
 	}
 
-	romf = &ROMFile{}
+	romf = &ROMFile{
+		log:      log,
+		Gamename: "",
+	}
 
 	switch buf[7] & 0x0C {
 	case 0x08:
@@ -253,6 +250,13 @@ func NewROMFile(buf []byte) (romf *ROMFile, err error) {
 			romf.Format = Format_Unknown
 		}
 		romf.parseiNES(buf)
+	}
+
+	// This may be a stupid idea, but some ROMs seem to set battery
+	// flag but have no NVRAM size specified
+	if romf.Battery && romf.PRGNvRamSize == 0 {
+		err = errors.New("Invalid ROM: Battery-backed PRG-NVRAM size not specified")
+		return
 	}
 	//i += 6
 	i := 16
@@ -288,6 +292,8 @@ func NewROMFile(buf []byte) (romf *ROMFile, err error) {
 		i += int(PRGBankSize)
 	}
 
+	romf.PRGRomData = bytes.Join(romf.ROMBanks, []byte{})
+
 	if bufLen < (i + int(romf.CHRRomSize)) {
 		errmsg := fmt.Sprintf("Invalid ROM: EOF in CHR-ROM bank data. "+
 			"Expected %v bytes, got %d bytes",
@@ -303,6 +309,8 @@ func NewROMFile(buf []byte) (romf *ROMFile, err error) {
 		romf.VROMBanks[n] = buf[i : i+int(CHRBankSize)]
 		i += int(CHRBankSize)
 	}
+
+	romf.CHRRomData = bytes.Join(romf.VROMBanks, []byte{})
 
 	// PRGRamSize
 	if romf.PRGRamSize > 0 {
@@ -410,6 +418,16 @@ func (romf *ROMFile) parseiNES(buf []byte) {
 			}
 		}
 	}
+
+	// If no CHR-ROM, assume 8KB CHR-RAM as default
+	if romf.CHRRomSize == 0 {
+		romf.CHRRamSize = int(RAMBankSize) // 8KB default CHR-RAM
+	}
+	// For iNES 1.0: If no PRG RAM specified, default to 8KB
+	// Mappers can override this for boards that don't have WRAM
+	if romf.PRGRamSize == 0 && romf.PRGNvRamSize == 0 {
+		romf.PRGRamSize = int(RAMBankSize) // 8KB default WRAM
+	}
 }
 
 // Parse NES 2.0 format ROM
@@ -484,10 +502,10 @@ func (romf *ROMFile) parseNES20(buf []byte) {
 			continue
 		case 10:
 			romf.PRGRamSize = romf.calculateRAMSize(b & 0x0F)
-			romf.PRGNvRamSize = romf.calculateRAMSize(b & 0xF0 >> 4)
+			romf.PRGNvRamSize = romf.calculateRAMSize((b & 0xF0) >> 4)
 		case 11:
 			romf.CHRRamSize = romf.calculateRAMSize(b & 0x0F)
-			romf.CHRNvRamSize = romf.calculateRAMSize(b & 0xF0 >> 4)
+			romf.CHRNvRamSize = romf.calculateRAMSize((b & 0xF0) >> 4)
 		case 12:
 			switch b & 0x03 {
 			case 0:
@@ -539,12 +557,18 @@ func (romf *ROMFile) calculateSize(lsb byte, msb byte, unitSize int) (banks uint
 	return
 }
 
+// calculateRAMSize handles the iNES 2.0 RAM size nibble
+// If [nibble] is zero, there is no PRG-(NV)RAM.
+// If [nibble] is non-zero, the actual size is
+// "64 << [nibble]" bytes, i.e. 8192 bytes for a [nibble] of 7.
 func (romf *ROMFile) calculateRAMSize(nibble byte) int {
 	if nibble == 0 {
 		return 0
 	}
 	// 64 * 2^(n-1) is the same as shifting 64 left by (n-1)
-	return int(64) << (nibble - 1)
+	//return int(64) << (nibble - 1)
+	// 64 * 2^(n) is the same as shifting 64 left by (n)
+	return int(64) << nibble
 }
 
 // Region returns the region flag of the ROM
@@ -572,21 +596,77 @@ func (romf *ROMFile) Tables() (t0, t1, t2, t3 int) {
 	return
 }
 
+func (romf *ROMFile) GetMapper() (rom ROM, err error) {
+	switch romf.Mapper {
+	case 0x00, 0x40, 0x41: // iNES ID: 0, 64, 65
+		rom = NewNROM(romf)
+	case 0x01, 0x69: // iNES ID: 1 (MMC1B), 105
+		rom = NewMMC1(romf)
+	//case 0x02, 0x42: 			// iNES ID: 2, 66
+	case 0x02: // iNES ID: 2
+		rom = NewUNROM(romf)
+	case 0x03, 0x43: // iNES ID: 3, 67
+		rom = NewCNROM(romf)
+	case 0x04: // iNES ID: 4
+		rom = NewMMC3(romf)
+	case 0x07: // iNES ID: 7
+		rom = NewANROM(romf)
+	case 0x09: // iNES ID: 9
+		rom = NewMMC2(romf)
+	case 0x0A: // iNES ID: 10
+		rom = NewMMC4(romf)
+	case 0x0B: // iNES ID: 11 (COLORDREAMS)
+		rom = NewColorDreams(romf)
+	case 0x42: // iNES ID: 66
+		rom = NewMHROM(romf)
+	case 0x9B: // iNES ID: 155
+		rom = NewMMC1A(romf)
+	case 0x0D: // iNES ID: 13 (CPROM)
+		err = fmt.Errorf("Mapper not yet supported %v", romf.Mapper)
+	case 0x1C: // iNES ID: 28 (INL-ROM / A53)
+		err = fmt.Errorf("Mapper not yet supported %v", romf.Mapper)
+	case 0x22: // iNES ID: 34 (BNROM)
+		err = fmt.Errorf("Mapper not yet supported %v", romf.Mapper)
+	case 0x45: // iNES ID: 69 (FME-7)
+		err = fmt.Errorf("Mapper not yet supported %v", romf.Mapper)
+	case 0x4E: // iNES ID: 78 (IF-12)
+		err = fmt.Errorf("Mapper not yet supported %v", romf.Mapper)
+	case 0x76: // iNES ID: 118 (TxSROM)
+		err = fmt.Errorf("Mapper not yet supported %v", romf.Mapper)
+	case 0x77: // iNES ID: 119 (TQROM)
+		err = fmt.Errorf("Mapper not yet supported %v", romf.Mapper)
+	case 0xB4: // iNES ID: 180 (UNROM)
+		err = fmt.Errorf("Mapper not yet supported %v", romf.Mapper)
+	default:
+		err = fmt.Errorf("Unsupported mapper type %v", romf.Mapper)
+	}
+
+	return
+}
+
 func (romf *ROMFile) String() string {
-	return fmt.Sprintf("PRG Banks: %v\n"+
-		"CHR Banks: %v\n"+
+	return fmt.Sprintf("Format: %s\n"+
+		"Region: %v\n"+
+		"PRG Banks: %v (%d bytes) Actual: %d bytes\n"+
+		"CHR Banks: %v (%d bytes) Actual: %d bytes\n"+
 		"Mirroring: %v\n"+
 		"Battery: %v\n"+
 		"Trainer: %v\n"+
 		"FourScreen: %v\n"+
 		"Cart Type: %v\n"+
-		"PRG RAM size: %v bytes\n"+
-		"CHR RAM size: %v bytes\n"+
-		"Region: %v\n",
-		romf.PRGBanks, romf.CHRBanks, romf.Mirroring,
-		romf.Battery, romf.Trainer, romf.FourScreen,
+		"PRG RAM size: %d bytes\n"+
+		"PRG NvRAM size: %d bytes\n"+
+		"CHR RAM size: %d bytes\n"+
+		"CHR NvRAM size: %d bytes\n"+
+		"INES Mapper: %v\n"+
+		"INES SubMapper: %v\n",
+		romf.Format.String(), romf.RegionFlag,
+		romf.PRGBanks, romf.PRGRomSize, len(romf.PRGRomData),
+		romf.CHRBanks, romf.CHRRomSize, len(romf.CHRRomData),
+		romf.Mirroring, romf.Battery, romf.Trainer, romf.FourScreen,
 		romf.CartType, romf.PRGRamSize, romf.CHRRamSize,
-		romf.RegionFlag)
+		romf.PRGNvRamSize, romf.CHRNvRamSize,
+		romf.Mapper, romf.SubMapper)
 }
 
 func (romf *ROMFile) GameName() string {
@@ -666,6 +746,59 @@ func (romf *ROMFile) SystemType() {
 	}
 }
 
+// ChrRamSize reads a byte from CHR-RAM or CHR-NVRAM at the specified offset
+// Returns open bus (0x00) if no CHR-RAM/NVRAM is present
+func (romf *ROMFile) ChrRamSize() (value int) {
+	// RAM is between $6000-$7FFF
+	if len(romf.CHRNvRamData) > 0 {
+		value = romf.CHRNvRamSize
+	} else if len(romf.CHRRamData) > 0 {
+		value = romf.CHRRamSize
+	}
+	return
+}
+
+// PrgRamSize reads a byte from PRG-RAM or PRG-NVRAM at the specified offset
+// Returns open bus (0x00) if no PRG-RAM/NVRAM is present
+func (romf *ROMFile) PrgRamSize() (value int) {
+	// RAM is between $6000-$7FFF
+	if len(romf.PRGNvRamData) > 0 {
+		value = romf.PRGNvRamSize
+	} else if len(romf.PRGRamData) > 0 {
+		value = romf.PRGRamSize
+	}
+	return
+}
+
+// FetchPrgRam reads a byte from PRG-RAM or PRG-NVRAM at the specified offset
+// Returns open bus (0x00) if no PRG-RAM/NVRAM is present
+func (romf *ROMFile) FetchPrgRam(address uint16) (value uint8) {
+	// RAM is between $6000-$7FFF
+	index := address & 0x1fff
+	if romf.Battery && len(romf.PRGNvRamData) > int(index) {
+		value = romf.PRGNvRamData[index]
+	} else if len(romf.PRGRamData) > int(index) {
+		value = romf.PRGRamData[index]
+	}
+	return
+}
+
+// StorePrgRam writes a byte to PRG-RAM or PRG-NVRAM at the specified offset
+// Does nothing if no PRG-RAM/NVRAM is present
+func (romf *ROMFile) StorePrgRam(address uint16, value uint8) {
+	// RAM is between $6000-$7FFF
+	index := address & 0x1fff
+	if romf.Battery && len(romf.PRGNvRamData) > int(index) {
+		romf.PRGNvRamData[index] = value
+	} else if len(romf.PRGRamData) > int(index) {
+		romf.PRGRamData[index] = value
+	}
+}
+
+func (romf *ROMFile) HasBattery() bool {
+	return romf.Battery
+}
+
 func (romf *ROMFile) LoadBattery() {
 	var ram []byte
 
@@ -710,4 +843,28 @@ func (romf *ROMFile) SaveBattery() (err error) {
 
 func (romf *ROMFile) GetROMFile() *ROMFile {
 	return romf
+}
+
+func (romf *ROMFile) GetConsole() *NES {
+	return romf.nes
+}
+
+func (romf *ROMFile) SetConsole(nes *NES) {
+	romf.nes = nes
+}
+
+func (romf *ROMFile) GetDebug() bool {
+	return romf._debugLog
+}
+
+func (romf *ROMFile) SetDebug(enable bool) {
+	romf._debugLog = enable
+	if enable {
+		romf.log.Logf(
+			"Debug logging enabled. "+
+				"PRG ROM: %d KB, CHR ROM: %d KB, "+
+				"CHR RAM: %d KB, PRG RAM: %d KB\n",
+			romf.PRGRomSize/1024, romf.CHRRomSize/1024,
+			romf.CHRRamSize/1024, romf.PRGRamSize/1024)
+	}
 }

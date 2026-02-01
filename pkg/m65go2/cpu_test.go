@@ -2,7 +2,6 @@ package m65go2
 
 import (
 	"fmt"
-	"log"
 )
 
 // region cpuTest
@@ -29,8 +28,6 @@ func (s *cpuTest) SetupSubTest() {
 	if s._instruction == nil {
 		return
 	}
-	s._oldPrefix = s.cpu.log.Prefix()
-	s.cpu.log.SetPrefix(fmt.Sprintf("%s/%s: ", s._instruction.Mnemonic, s._instruction.AddressingMode))
 }
 
 func (s *cpuTest) AfterTest(_, _ string) {
@@ -40,9 +37,6 @@ func (s *cpuTest) AfterTest(_, _ string) {
 func (s *cpuTest) TearDownSubTest() {
 	if s._instruction != nil {
 		s._instruction = nil
-	}
-	if s._oldPrefix != "" {
-		s.cpu.log.SetPrefix(s._oldPrefix)
 	}
 }
 
@@ -3634,12 +3628,10 @@ func (s *ClockCyclesTest) TestCyclesCorrectAfterOperationsThatDoNotWrap() {
 	}
 
 	r := s.Require()
-	flags := s.cpu.log.Flags()
-	s.cpu.log.SetFlags(log.LstdFlags | log.Lshortfile)
 	s.cpu.breakError = false
 
 	for _, st := range subtests {
-		data := s.cpu.Instructions.Get(st.op)
+		data := s.cpu.Instructions.GetOp(st.op)
 		s._instruction = data
 		s.cpu.Reset()
 		//s.cpu.debug |= DebugModeCycleDump
@@ -3660,7 +3652,6 @@ func (s *ClockCyclesTest) TestCyclesCorrectAfterOperationsThatDoNotWrap() {
 		//s.cpu.debug &= ^DebugModeCycleDump
 	}
 	s.cpu.breakError = true
-	s.cpu.log.SetFlags(flags)
 }
 
 // Test number of cycles remaining is correct when in AbsoluteX or
@@ -3708,7 +3699,7 @@ func (s *ClockCyclesTest) TestCyclesCorrectWhenInAbsoluteXOrAbsoluteYAndWrap() {
 	r := s.Require()
 
 	for _, st := range subtests {
-		data := s.cpu.Instructions.Get(st.op)
+		data := s.cpu.Instructions.GetOp(st.op)
 		s._instruction = data
 		s.Run(fmt.Sprintf("%s/%s", data.Mnemonic, data.AddressingMode), func() {
 			program := []uint8{st.argument, 0x06, uint8(data.OpCode), 0xFF, 0xFF, 0x00, 0x03}
@@ -3748,7 +3739,7 @@ func (s *ClockCyclesTest) TestCyclesCorrectWhenInIndirectIndexedAndWrap() {
 	r := s.Require()
 
 	for _, st := range subtests {
-		data := s.cpu.Instructions.Get(st.op)
+		data := s.cpu.Instructions.GetOp(st.op)
 		s.Run(fmt.Sprintf("%s/%s", data.Mnemonic, data.AddressingMode), func() {
 			program := []uint8{0xA0, 0x04, uint8(data.OpCode), 0x05, 0x08, 0xFF, 0xFF, 0x03}
 			s.loadProgram(0x0000, program)
@@ -3782,8 +3773,8 @@ func (s *ClockCyclesTest) TestCyclesCorrectWhenRelativeAndBranchOnCarry() {
 	r := s.Require()
 
 	for _, st := range subtests {
-		data := s.cpu.Instructions.Get(st.op)
-		flag := s.cpu.Instructions.Get(st.flag)
+		data := s.cpu.Instructions.GetOp(st.op)
+		flag := s.cpu.Instructions.GetOp(st.flag)
 		s.Run(fmt.Sprintf("%s/%s", data.Mnemonic, flag.Mnemonic), func() {
 			program := []uint8{uint8(flag.OpCode), uint8(data.OpCode), 0x00}
 			s.loadProgram(0x0000, program)
@@ -3819,8 +3810,8 @@ func (s *ClockCyclesTest) TestCyclesCorrectWhenRelativeAndBranchOnCarryAndWrap()
 	r := s.Require()
 
 	for _, st := range subtests {
-		data := s.cpu.Instructions.Get(st.op)
-		flag := s.cpu.Instructions.Get(st.flag)
+		data := s.cpu.Instructions.GetOp(st.op)
+		flag := s.cpu.Instructions.GetOp(st.flag)
 		s.Run(fmt.Sprintf("%s/%s/%d", data.Mnemonic, flag.Mnemonic, st.argument), func() {
 			program := []uint8{uint8(flag.OpCode), uint8(data.OpCode), st.argument, 0x00}
 			s.loadProgram(st.initialPC, program)
@@ -3857,7 +3848,7 @@ func (s *ClockCyclesTest) TestCyclesCorrectWhenRelativeAndBranchOnZero() {
 	r := s.Require()
 
 	for _, st := range subtests {
-		data := s.cpu.Instructions.Get(st.op)
+		data := s.cpu.Instructions.GetOp(st.op)
 		s.Run(fmt.Sprintf("%s/%d", data.Mnemonic, st.argument), func() {
 			program := []uint8{0xA9, st.argument, uint8(data.OpCode), 0x00}
 			s.loadProgram(0x0000, program)
@@ -3893,7 +3884,7 @@ func (s *ClockCyclesTest) TestCyclesCorrectWhenRelativeAndBranchOnZeroAndWrap() 
 	r := s.Require()
 
 	for _, st := range subtests {
-		data := s.cpu.Instructions.Get(st.op)
+		data := s.cpu.Instructions.GetOp(st.op)
 		s.Run(fmt.Sprintf("%s/%d/%d", data.Mnemonic, st.amount, st.argument), func() {
 			program := []uint8{0xA9, st.amount, uint8(data.OpCode), st.argument, 0x00}
 			s.loadProgram(st.initialPC, program)
@@ -3928,7 +3919,7 @@ func (s *ClockCyclesTest) TestCyclesCorrectWhenRelativeAndBranchOnNegative() {
 	r := s.Require()
 
 	for _, st := range subtests {
-		data := s.cpu.Instructions.Get(st.op)
+		data := s.cpu.Instructions.GetOp(st.op)
 		s.Run(fmt.Sprintf("%s/%d", data.Mnemonic, st.argument), func() {
 			program := []uint8{0xA9, st.argument, uint8(data.OpCode), 0x00}
 			s.loadProgram(0x0000, program)
@@ -3964,7 +3955,7 @@ func (s *ClockCyclesTest) TestCyclesCorrectWhenRelativeAndBranchOnNegativeAndWra
 	r := s.Require()
 
 	for _, st := range subtests {
-		data := s.cpu.Instructions.Get(st.op)
+		data := s.cpu.Instructions.GetOp(st.op)
 		s.Run(fmt.Sprintf("%s/%d/%d", data.Mnemonic, st.amount, st.argument), func() {
 			program := []uint8{0xA9, st.amount, uint8(data.OpCode), st.argument, 0x00}
 			s.loadProgram(st.initialPC, program)
@@ -3999,7 +3990,7 @@ func (s *ClockCyclesTest) TestCyclesCorrectWhenRelativeAndBranchOnOverflow() {
 	r := s.Require()
 
 	for _, st := range subtests {
-		data := s.cpu.Instructions.Get(st.op)
+		data := s.cpu.Instructions.GetOp(st.op)
 		s.Run(fmt.Sprintf("%s/%d", data.Mnemonic, st.argument), func() {
 			program := []uint8{0xA9, 0x01, 0x69, st.argument, uint8(data.OpCode), 0x00}
 			s.loadProgram(0x0000, program)
@@ -4038,7 +4029,7 @@ func (s *ClockCyclesTest) TestCyclesCorrectWhenRelativeAndBranchOnOverflowAndWra
 	r := s.Require()
 
 	for _, st := range subtests {
-		data := s.cpu.Instructions.Get(st.op)
+		data := s.cpu.Instructions.GetOp(st.op)
 		s.Run(fmt.Sprintf("%s/%d/%d", data.Mnemonic, st.amount, st.argument), func() {
 			program := []uint8{0xA9, st.amount, 0x69, 0x01, uint8(data.OpCode), st.argument, 0x00}
 			s.loadProgram(st.initialPC, program)
@@ -4307,7 +4298,7 @@ func (s *ProgramCounterTest) TestProgramCounterCorrect() {
 	r := s.Require()
 
 	for _, st := range subtests {
-		data := s.cpu.Instructions.Get(st.op)
+		data := s.cpu.Instructions.GetOp(st.op)
 		s.Run(fmt.Sprintf("%s/%s", data.Mnemonic, data.AddressingMode), func() {
 			program := []uint8{uint8(data.OpCode), 0x00}
 			s.loadProgram(0x0000, program)
@@ -4334,7 +4325,7 @@ func (s *ProgramCounterTest) TestBranchOnCarryProgramCounterCorrectWhenNoBranchO
 	r := s.Require()
 
 	for _, data := range subtests {
-		i := s.cpu.Instructions.Get(data.op)
+		i := s.cpu.Instructions.GetOp(data.op)
 		s.Run(i.Mnemonic, func() {
 			s.cpu.Registers.PC = 0x0000
 			program := []uint8{data.argument, uint8(data.op), 0x48}
@@ -4366,7 +4357,7 @@ func (s *ProgramCounterTest) TestBranchOnZeroProgramCounterCorrectWhenNoBranchOc
 	r := s.Require()
 
 	for _, data := range subtests {
-		i := s.cpu.Instructions.Get(data.op)
+		i := s.cpu.Instructions.GetOp(data.op)
 		s.Run(i.Mnemonic, func() {
 			s.cpu.Registers.PC = 0x0000
 			program := []uint8{0xa9, data.argument, uint8(data.op)}
@@ -4398,7 +4389,7 @@ func (s *ProgramCounterTest) TestBranchOnNegativeProgramCounterCorrectWhenNoBran
 	r := s.Require()
 
 	for _, data := range subtests {
-		i := s.cpu.Instructions.Get(data.op)
+		i := s.cpu.Instructions.GetOp(data.op)
 		s.Run(i.Mnemonic, func() {
 			s.cpu.Registers.PC = 0x0000
 			program := []uint8{0xa9, data.argument, uint8(data.op)}
@@ -4430,7 +4421,7 @@ func (s *ProgramCounterTest) TestBranchOnOverflowProgramCounterCorrectWhenNoBran
 	r := s.Require()
 
 	for _, data := range subtests {
-		i := s.cpu.Instructions.Get(data.op)
+		i := s.cpu.Instructions.GetOp(data.op)
 		s.Run(i.Mnemonic, func() {
 			s.cpu.Registers.PC = 0x0000
 			program := []uint8{0xa9, 0x01, 0x69, data.argument, uint8(data.op), 0x00}

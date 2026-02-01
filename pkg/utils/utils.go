@@ -39,19 +39,32 @@ func (s *CommonTest) SetupSubTest() {}
 
 func (s *CommonTest) TearDownSubTest() {}
 
-func (s *CommonTest) Log(args ...any) { s.T().Log(args...) }
+func (s *CommonTest) Log(args ...any) {
+	t := s.T()
+	t.Helper()
 
-func (s *CommonTest) Logf(format string, args ...any) { s.T().Logf(format, args...) }
+	t.Log(args...)
+}
+
+func (s *CommonTest) Logf(format string, args ...any) {
+	t := s.T()
+	t.Helper()
+	t.Logf(format, args...)
+}
 
 // SkipShort skips the test if running in short mode
 func (s *CommonTest) SkipShort() {
 	if testing.Short() {
-		s.T().Skip("Skipping trace test in short mode")
+		t := s.T()
+		t.Helper()
+		t.Skip("Skipping trace test in short mode")
 	}
 }
 
 // ValidateRom validates the NES ROM format and returns the PRG ROM size
 func (s *CommonTest) ValidateRom(romData []byte) (prgRomSize int) {
+	t := s.T()
+	t.Helper()
 	// NES ROM format: 16-byte header + PRG ROM + CHR ROM
 	// Header format: NES\x1a + 16KB PRG banks + 8KB CHR banks + flags...
 	s.Greater(len(romData), 16)

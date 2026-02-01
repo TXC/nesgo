@@ -219,6 +219,10 @@ type RP2C02 struct {
 	PAL               bool
 	NumScanlines      uint16
 	PreRenderScanline uint16
+
+	// VRAMAddressChanged is called when the PPU address bus changes
+	// Used by MMC3 and other mappers for A12 IRQ detection
+	VRAMAddressChanged func(address uint16, cpuClock uint64) `json:"-"`
 }
 
 func NewRP2C02(interrupt func(bool), region string) *RP2C02 {
@@ -692,7 +696,13 @@ func (ppu *RP2C02) fetchSprites() {
 		s.Zero = index == 0 && ppu.OAM.SpriteZeroInBuffer
 
 		address := ppu.spriteAddress(sprite)
+		if ppu.VRAMAddressChanged != nil {
+			ppu.VRAMAddressChanged(address, uint64(ppu.Cycle)) // Sprite low byte fetch
+		}
 		s.TileLow = ppu.Memory.Fetch(address)
+		if ppu.VRAMAddressChanged != nil {
+			ppu.VRAMAddressChanged(address|0x0008, uint64(ppu.Cycle)) // Sprite high byte fetch
+		}
 		s.TileHigh = ppu.Memory.Fetch(address | 0x0008)
 
 		if ppu.sprite(sprite, FlipHorizontally) != 0 {
@@ -865,6 +875,9 @@ func (ppu *RP2C02) renderSprites() (spritePixel, spriteIndex, spritePriority uin
 
 func openNTByte(ppu *RP2C02) {
 	ppu.AddressLine = ppu.openName(ppu.Registers.Address)
+	if ppu.VRAMAddressChanged != nil {
+		ppu.VRAMAddressChanged(ppu.AddressLine, uint64(ppu.Cycle))
+	}
 }
 
 func fetchNTByte(ppu *RP2C02) {
@@ -873,6 +886,9 @@ func fetchNTByte(ppu *RP2C02) {
 
 func openATByte(ppu *RP2C02) {
 	ppu.AddressLine = ppu.openAttribute(ppu.Registers.Address)
+	if ppu.VRAMAddressChanged != nil {
+		ppu.VRAMAddressChanged(ppu.AddressLine, uint64(ppu.Cycle))
+	}
 }
 
 func fetchATByte(ppu *RP2C02) {
@@ -882,6 +898,9 @@ func fetchATByte(ppu *RP2C02) {
 func openLowBGTileByte(ppu *RP2C02) {
 	// Fetch color bit 0 for next 8 dots
 	ppu.AddressLine = ppu.PatternAddress
+	if ppu.VRAMAddressChanged != nil {
+		ppu.VRAMAddressChanged(ppu.AddressLine, uint64(ppu.Cycle))
+	}
 }
 
 func fetchLowBGTileByte(ppu *RP2C02) {
@@ -892,6 +911,9 @@ func fetchLowBGTileByte(ppu *RP2C02) {
 func openHighBGTileByte(ppu *RP2C02) {
 	// Fetch color bit 1 for next 8 dots
 	ppu.AddressLine = ppu.PatternAddress | 0x0008
+	if ppu.VRAMAddressChanged != nil {
+		ppu.VRAMAddressChanged(ppu.AddressLine, uint64(ppu.Cycle))
+	}
 }
 
 func fetchHighBGTileByte(ppu *RP2C02) {

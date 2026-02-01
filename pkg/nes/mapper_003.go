@@ -29,7 +29,7 @@ func NewCNROM(romf *ROMFile) *CNROM {
 }
 
 func (cnrom *CNROM) String() string {
-	return cnrom.ROMFile.String() + " Mapper: 3 (CNROM)"
+	return cnrom.ROMFile.String() + "Mapper: 3 (CNROM)"
 }
 
 func (cnrom *CNROM) Mappings(which rp2ago3.Mapping) (fetch, store []uint16) {

@@ -8,8 +8,10 @@ const (
 // values using a 16-bit address for a total of 65,536 possible 8-bit
 // values.
 type Memory interface {
-	Reset()                                             // Sets all memory locations to zero
-	Fetch(address uint16) (value uint8)                 // Returns the value stored at the given memory address
+	//Raw() []uint8                                       // Returns the raw memory slice
+	Reset()                             // Sets all memory locations to zero
+	Fetch(address uint16) (value uint8) // Returns the value stored at the given memory address
+	//FetchWord(address uint16) (value uint16)            // Returns the value stored at the given memory address
 	Store(address uint16, value uint8) (oldValue uint8) // Stores the value at the given memory address
 }
 
@@ -28,6 +30,8 @@ func NewBasicMemory(size uint32) *BasicMemory {
 	}
 }
 
+func (mem *BasicMemory) Raw() []uint8 { return mem.M }
+
 // Resets all memory locations to zero
 func (mem *BasicMemory) Reset() {
 	for i := range mem.M {
@@ -45,6 +49,19 @@ func (mem *BasicMemory) Fetch(address uint16) (value uint8) {
 
 	return
 }
+
+//// Returns the value stored at the given memory address
+//func (mem *BasicMemory) FetchWord(address uint16) (value uint16) {
+//	if mem.DisableReads {
+//		value = 0xffff
+//	} else {
+//		lo := mem.Fetch(address)
+//		hi := mem.Fetch(address + 1)
+//		value = (uint16(hi) << 8) | uint16(lo)
+//	}
+//
+//	return
+//}
 
 // Stores the value at the given memory address
 func (mem *BasicMemory) Store(address uint16, value uint8) (oldValue uint8) {

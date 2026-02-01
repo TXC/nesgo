@@ -140,8 +140,13 @@ func (instructions InstructionTable) GetAll() []*Instruction {
 	return instructions.opcodes
 }
 
+// Gets an instruction from the InstructionTable by uint8 opcode
+func (instructions InstructionTable) Get(opcode uint8) *Instruction {
+	return instructions.GetOp(OpCode(opcode))
+}
+
 // Gets an instruction from the InstructionTable by opcode
-func (instructions InstructionTable) Get(opcode OpCode) *Instruction {
+func (instructions InstructionTable) GetOp(opcode OpCode) *Instruction {
 	return instructions.opcodes[opcode]
 }
 

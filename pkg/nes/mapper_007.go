@@ -25,8 +25,10 @@ func NewANROM(romf *ROMFile) *ANROM {
 
 	anrom.Registers.Reset()
 	anrom.setTables(anrom.Tables())
-	if anrom.CHRRamSize == 0 || len(anrom.CHRRamData) == 0 {
+	if anrom.CHRRamSize == 0 {
 		anrom.CHRRamSize = 0x2000
+	}
+	if len(anrom.CHRRamData) != anrom.CHRRamSize {
 		anrom.CHRRamData = make([]uint8, anrom.CHRRamSize)
 	}
 
@@ -34,7 +36,7 @@ func NewANROM(romf *ROMFile) *ANROM {
 }
 
 func (anrom *ANROM) String() string {
-	return anrom.ROMFile.String() + " Mapper: 7 (ANROM)"
+	return anrom.ROMFile.String() + "Mapper: 7 (ANROM)"
 }
 
 func (anrom *ANROM) Mappings(which rp2ago3.Mapping) (fetch, store []uint16) {
@@ -58,6 +60,13 @@ func (anrom *ANROM) Mappings(which rp2ago3.Mapping) (fetch, store []uint16) {
 			}
 		}
 	case rp2ago3.CPU:
+		// WRAM at $6000-$7FFF
+		if anrom.PRGNvRamSize > 0 || anrom.PRGRamSize > 0 {
+			for i := uint32(0x6000); i <= 0x7fff; i++ {
+				fetch = append(fetch, uint16(i))
+				store = append(store, uint16(i))
+			}
+		}
 		//if anrom.PRGBanks > 0 {
 		if anrom.PRGRomSize > 0 {
 			// PRG bank 1
@@ -92,10 +101,15 @@ func (anrom *ANROM) Fetch(address uint16) (value uint8) {
 			value = anrom.CHRRomData[address]
 		}
 	// CPU only
+	case address >= 0x6000 && address <= 0x7fff:
+		value = anrom.FetchPrgRam(address)
 	//case address >= 0x8000 && address <= 0xffff:
 	case address >= 0x8000:
-		bank := (anrom.Registers.BankSelect & 0x07)
-		index := uint16(bank) * (address & 0x7fff)
+		// ANROM: 32KB banks, bank select bits 0-2
+		// Mask to actual number of banks to prevent overflow
+		bankMask := uint32((anrom.PRGRomSize / 0x8000) - 1)
+		bank := uint32(anrom.Registers.BankSelect&0x07) & bankMask
+		index := bank*0x8000 + uint32(address&0x7fff)
 		value = anrom.PRGRomData[index]
 		/*
 			index := address & 0x3fff
@@ -131,10 +145,12 @@ func (anrom *ANROM) Store(address uint16, value uint8) (oldValue uint8) {
 	case address <= 0x1fff:
 		if anrom.CHRRamSize > 0 {
 			anrom.CHRRamData[address] = value
-		} else if anrom.CHRRomSize > 0 {
-			anrom.CHRRomData[address] = value
 		}
-	// CPU only
+		// CHR ROM writes are ignored
+	// CPU WRAM at $6000-$7FFF
+	case address >= 0x6000 && address <= 0x7fff:
+		anrom.StorePrgRam(address, value)
+	// CPU Bank select register
 	// PRG banks 1 & 2
 	//case address >= 0x8000 && address <= 0xffff:
 	case address >= 0x8000:
@@ -165,9 +181,9 @@ func (anrom *ANROM) prgBanks() (lower, upper uint8) {
 func (anrom *ANROM) Tables() (t0, t1, t2, t3 int) {
 	switch MMC1Mirroring(anrom.mirroring()) {
 	case OneScreenLowerBank:
-		t0, t1, t2, t3 = 1, 1, 1, 1
-	case OneScreenUpperBank:
 		t0, t1, t2, t3 = 0, 0, 0, 0
+	case OneScreenUpperBank:
+		t0, t1, t2, t3 = 1, 1, 1, 1
 	case Vertical:
 		t0, t1, t2, t3 = 0, 1, 0, 1
 	case Horizontal:

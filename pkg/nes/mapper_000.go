@@ -1,3 +1,4 @@
+// NROM Mapper (INES Mapper 0)
 package nes
 
 import (
@@ -13,7 +14,7 @@ func NewNROM(romf *ROMFile) *NROM {
 }
 
 func (nrom *NROM) String() string {
-	return nrom.ROMFile.String() + " Mapper: 0 (NROM)"
+	return nrom.ROMFile.String() + "Mapper: 0 (NROM)"
 }
 
 func (nrom *NROM) Mappings(which rp2ago3.Mapping) (fetch, store []uint16) {

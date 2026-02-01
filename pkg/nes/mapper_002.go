@@ -1,6 +1,9 @@
+// UNROM Mapper (INES Mapper 2)
 package nes
 
 import (
+	"fmt"
+
 	"github.com/txc/nesgo/pkg/rp2ago3"
 )
 
@@ -28,7 +31,8 @@ func NewUNROM(romf *ROMFile) *UNROM {
 }
 
 func (unrom *UNROM) String() string {
-	return unrom.ROMFile.String() + " Mapper: 2 (UNROM)"
+	s := fmt.Sprintf("Mapper: %d (UNROM)", unrom.Mapper)
+	return unrom.ROMFile.String() + s
 }
 
 func (unrom *UNROM) Mappings(which rp2ago3.Mapping) (fetch, store []uint16) {
@@ -85,18 +89,29 @@ func (unrom *UNROM) Fetch(address uint16) (value uint8) {
 	//case address >= 0x8000 && address <= 0xffff:
 	case address >= 0x8000:
 		index := address & 0x3fff
-
+		var (
+			bank1 int
+			bank2 int
+		)
+		switch unrom.Mapper {
+		case 2:
+			bank1 = int(unrom.Registers.BankSelect & 0x08)
+			bank2 = int(unrom.PRGBanks - 1)
+		case 180:
+			bank1 = 0
+			bank2 = int(unrom.Registers.BankSelect & 0x08)
+		}
 		switch {
 		// PRG bank 1
 		case address >= 0x8000 && address <= 0xbfff:
 			if unrom.PRGBanks > 0 {
-				value = unrom.ROMBanks[unrom.Registers.BankSelect][index]
+				value = unrom.ROMBanks[bank1][index]
 			}
 		// PRG bank 2
 		//case address >= 0xc000 && address <= 0xffff:
 		case address >= 0xc000:
 			if unrom.PRGBanks > 0 {
-				value = unrom.ROMBanks[unrom.PRGBanks-1][index]
+				value = unrom.ROMBanks[bank2][index]
 			}
 		}
 	}

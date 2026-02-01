@@ -1,3 +1,4 @@
+// MMC2 Mapper (INES Mapper 9)
 package nes
 
 import (
@@ -39,16 +40,18 @@ func NewMMC2(romf *ROMFile) *MMC2 {
 
 	// divide 8KB CHR banks into 4KB banks since we may be
 	// swapping 4KB banks
-	if romf.CHRBanks > 0 {
-		vromBanks := make([][]uint8, uint16(romf.CHRBanks)*2)
+	if romf.CHRRomSize > 0 {
+		// Calculate number of 4KB banks (CHR comes in 8KB units typically)
+		banks := uint16(romf.CHRBanks) * 2
+		vromBanks := make([][]uint8, banks)
 
 		for n := 0; n < int(romf.CHRBanks); n++ {
-			vromBanks[2*n] = romf.VROMBanks[n][0x0000:0x1000]
-			vromBanks[(2*n)+1] = romf.VROMBanks[n][0x1000:0x2000]
+			vromBanks[2*n] = romf.CHRRomData[n*0x2000 : n*0x2000+0x1000]
+			vromBanks[(2*n)+1] = romf.CHRRomData[n*0x2000+0x1000 : (n+1)*0x2000]
 		}
 
 		romf.VROMBanks = vromBanks
-		romf.CHRBanks *= 2
+		romf.CHRBanks = banks
 	}
 
 	// divide 16KB PRG banks into 8KB banks since we may be
@@ -72,7 +75,7 @@ func NewMMC2(romf *ROMFile) *MMC2 {
 }
 
 func (mmc2 *MMC2) String() string {
-	return mmc2.ROMFile.String() + " Mapper: 9 (MMC2)"
+	return mmc2.ROMFile.String() + "Mapper: 9 (MMC2)"
 }
 
 func (mmc2 *MMC2) Mappings(which rp2ago3.Mapping) (fetch, store []uint16) {
@@ -165,30 +168,27 @@ func (mmc2 *MMC2) Fetch(address uint16) (value uint8) {
 	// CPU only
 	//case address >= 0x8000 && address <= 0xffff:
 	case address >= 0x8000:
-		index := address & 0x1fff
-
 		switch {
-		// PRG bank 1
+		// PRG bank 1 - switchable 8KB at $8000-$9FFF
 		case address >= 0x8000 && address <= 0x9fff:
 			if mmc2.PRGBanks > 0 {
 				bank := mmc2.prgBank()
+				if bank >= uint8(mmc2.PRGBanks) {
+					bank = bank % uint8(mmc2.PRGBanks)
+				}
+				index := address & 0x1fff
 				value = mmc2.ROMBanks[bank][index]
 			}
-		// PRG bank 2
-		case address >= 0xa000 && address <= 0xbfff:
+		// Fixed: last 24KB at $A000-$FFFF (last 3 8KB banks)
+		case address >= 0xa000:
 			if mmc2.PRGBanks > 0 {
-				value = mmc2.ROMBanks[mmc2.PRGBanks-3][index]
-			}
-		// PRG bank 3
-		case address >= 0xc000 && address <= 0xdfff:
-			if mmc2.PRGBanks > 0 {
-				value = mmc2.ROMBanks[mmc2.PRGBanks-2][index]
-			}
-		// PRG bank 4
-		//case address >= 0xe000 && address <= 0xffff:
-		case address >= 0xe000:
-			if mmc2.PRGBanks > 0 {
-				value = mmc2.ROMBanks[mmc2.PRGBanks-1][index]
+				// Calculate offset within the 24KB region
+				offset := address - 0xa000
+				// Determine which of the last 3 8KB banks
+				bankOffset := offset / 0x2000 // 0, 1, or 2
+				bank := mmc2.PRGBanks - 3 + uint16(bankOffset)
+				index := offset % 0x2000
+				value = mmc2.ROMBanks[bank][index]
 			}
 		}
 	}
@@ -261,19 +261,39 @@ func (mmc2 *MMC2) prgBank() uint8 {
 }
 
 func (mmc2 *MMC2) chrBank0() (bank uint8) {
-	return mmc2.Registers.CHRBank0 & 0x1f
+	bank = mmc2.Registers.CHRBank0 & 0x1f
+	// Wrap to available banks
+	if mmc2.CHRBanks > 0 {
+		bank = bank % uint8(mmc2.CHRBanks)
+	}
+	return
 }
 
 func (mmc2 *MMC2) chrBank1() (bank uint8) {
-	return mmc2.Registers.CHRBank1 & 0x1f
+	bank = mmc2.Registers.CHRBank1 & 0x1f
+	// Wrap to available banks
+	if mmc2.CHRBanks > 0 {
+		bank = bank % uint8(mmc2.CHRBanks)
+	}
+	return
 }
 
 func (mmc2 *MMC2) chrBank2() (bank uint8) {
-	return mmc2.Registers.CHRBank2 & 0x1f
+	bank = mmc2.Registers.CHRBank2 & 0x1f
+	// Wrap to available banks
+	if mmc2.CHRBanks > 0 {
+		bank = bank % uint8(mmc2.CHRBanks)
+	}
+	return
 }
 
 func (mmc2 *MMC2) chrBank3() (bank uint8) {
-	return mmc2.Registers.CHRBank3 & 0x1f
+	bank = mmc2.Registers.CHRBank3 & 0x1f
+	// Wrap to available banks
+	if mmc2.CHRBanks > 0 {
+		bank = bank % uint8(mmc2.CHRBanks)
+	}
+	return
 }
 
 func (mmc2 *MMC2) mirroring() rp2cgo2.Mirroring {

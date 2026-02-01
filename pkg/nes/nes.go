@@ -20,6 +20,7 @@ import (
 	"github.com/txc/nesgo/pkg/m65go2"
 	"github.com/txc/nesgo/pkg/rp2ago3"
 	"github.com/txc/nesgo/pkg/rp2cgo2"
+	"github.com/txc/nesgo/pkg/utils"
 )
 
 //go:generate stringer -type=RunState
@@ -62,6 +63,7 @@ type NES struct {
 	master        bool
 	bridge        *Bridge
 	framePool     *sync.Pool
+	log           *utils.Logger
 }
 
 type Options struct {
@@ -74,6 +76,7 @@ type Options struct {
 	HTTPAddress   string
 	Listen        string
 	Connect       string
+	Logger        *utils.Logger
 }
 
 func NewNES(filename string, options *Options) (nes *NES, err error) {
@@ -95,6 +98,11 @@ func NewNESFromReader(gamename string, reader io.Reader, options *Options) (nes 
 	var master bool
 	var bridge *Bridge
 	var rom ROM
+	var log *utils.Logger
+
+	if options.Logger != nil {
+		log = options.Logger
+	}
 
 	region := RegionFromString(options.Region)
 
@@ -129,7 +137,7 @@ func NewNESFromReader(gamename string, reader io.Reader, options *Options) (nes 
 			return nil, err
 		}
 
-		rom, err = NewROMFromBuf(buf, gamename, ".nes", cpu.InterruptLine(m65go2.Irq), ppu.Nametable.SetTables)
+		rom, err = NewROMFromBuf(buf, gamename, ".nes", log, cpu.InterruptLine(m65go2.Irq), ppu.Nametable.SetTables)
 		if err != nil {
 			err = fmt.Errorf("Error loading ROM: %v", err)
 			return nil, err
@@ -141,7 +149,6 @@ func NewNESFromReader(gamename string, reader io.Reader, options *Options) (nes 
 		case PAL:
 			cpuDivisor = rp2ago3.PALCPUClockDivisor
 		}
-
 	}
 
 	ctrls := NewControllers()
@@ -202,6 +209,14 @@ func NewNESFromReader(gamename string, reader io.Reader, options *Options) (nes 
 	if master {
 		cpu.Memory.AddMappings(rom, rp2ago3.CPU)
 		ppu.Memory.AddMappings(rom, rp2ago3.PPU)
+
+		// Wire up A12 IRQ detection if using a mapper that supports it
+		if mapper, ok := rom.(MapperA12RisingEdge); ok {
+			ppu.VRAMAddressChanged = func(address uint16, cpuClock uint64) {
+				// Use CPU cycle count for proper timing
+				mapper.NotifyVRAMAddressChange(address, cpu.Cycles)
+			}
+		}
 	}
 
 	lock := make(chan uint64, 1)
@@ -227,9 +242,11 @@ func NewNESFromReader(gamename string, reader io.Reader, options *Options) (nes 
 		master:        master,
 		bridge:        bridge,
 		framePool:     framePool,
+		log:           log,
 	}
 
 	bridge.nes = nes
+	rom.SetConsole(nes)
 
 	return
 }
@@ -408,6 +425,13 @@ func (nes *NES) LoadStateFromReader(reader io.ReaderAt, size int64) (err error) 
 			nes.ROM = rom
 			nes.CPU.Memory.AddMappings(rom, rp2ago3.CPU)
 			nes.PPU.Memory.AddMappings(rom, rp2ago3.PPU)
+
+			// Wire up A12 IRQ detection if using a mapper that supports it
+			if mapper, ok := rom.(MapperA12RisingEdge); ok {
+				nes.PPU.VRAMAddressChanged = func(address uint16, cpuClock uint64) {
+					mapper.NotifyVRAMAddressChange(address, nes.CPU.Cycles)
+				}
+			}
 		}
 	}
 
@@ -473,9 +497,13 @@ func (nes *NES) runProcessors() (err error) {
 	}
 }
 
-func (nes *NES) step() (cycles uint16, err error) {
-	mmc3, _ := nes.ROM.(*MMC3)
+func (nes *NES) Execute() (cycles uint16, err error) {
+	cycles, err = nes.step()
+	nes.Tick += uint64(cycles)
+	return
+}
 
+func (nes *NES) step() (cycles uint16, err error) {
 	if cycles, err = nes.CPU.Execute(); err != nil {
 		return 0, err
 	}
@@ -486,10 +514,6 @@ func (nes *NES) step() (cycles uint16, err error) {
 		if colors := nes.PPU.Execute(); colors != nil {
 			nes.frame(colors)
 			nes.fps.Delay()
-		}
-
-		if mmc3 != nil && nes.PPU.TriggerScanlineCounter() {
-			mmc3.scanlineCounter()
 		}
 
 		nes.PPUQuota--

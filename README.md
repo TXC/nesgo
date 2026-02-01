@@ -170,13 +170,32 @@ Note that player two does not need to provide a `FILE` argument.
 
 ## Mappers
 
-- NROM
-- MMC1
-- UNROM
-- CNROM
-- MMC3
-- ANROM
-- MMC2
+| Name   | iNES ID | PRG ROM | PRG RAM | PRG NvRAM | CHR ROM | CHR RAM | CHR NvRAM |
+| ---    | ---:    | ---:    | ---:    | ---:      | ---:    | ---     | ---       |
+| NROM   | 0, 64, 65 | 16, 32  | 2, 4    | | 8       | | |
+| MMC1   | 1       | 256/512 | 32      | | 128     | | |
+| UNROM  | 2       | 256/4096 | n/a    | | 8       | | |
+| CNROM  | 3, 67   | 32      | None    | | 32      | | |
+| MMC3   | 4       | 512     | 8       | | 256     | | |
+| ANROM  | 7       | 256     | None    | | 8       | | |
+| MMC2   | 9       | 128     | 8 (PC10) | | 128    | | |
+| MHROM  | 66      | 64/128  | None    | | 16/32   | | |
+
+### To support
+- [X] 001: SxROM (Bionic Commando, Final Fantasy, Journey to Silius)
+- [X] 002: UNROM, UOROM (7432) (Battle Kid, Contra, DuckTales)
+- [X] 004: TxROM (Super Mario Bros. 2-3, Mega Man 3-6)
+- [X] 007: AxROM (Battletoads, Jeopardy!)
+- [X] 009: PNROM (Punch-Out!!)
+- [ ] 010: FJROM, FKROM (Famicom Wars, Fire Emblem)
+- [ ] 011: Color Dreams (Crystal Mines, Spiritual Warfare)
+- [ ] 028: INL-ROM (A53) (Action 53 volumes 1 and 2)
+- [ ] 034: BNROM (Deadly Towers, Haunted: Halloween '85)
+- [X] 066: NROM, CNROM, GNROM (Balloon Fight, Pipe Dream, Gumshoe)
+- [ ] 069: JLROM, JSROM (Batman: Return of the Joker, Gimmick!, Hebereke)
+- [ ] 078.3: IF-12 (Holy Diver)
+- [ ] 118 TxSROM (NES Play Action Football, Wanderers from Ys)
+- [ ] 180: UNROM (7408) (Crazy Climber)
 
 ## Acknowledgments
 

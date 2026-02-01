@@ -3,9 +3,10 @@ package m65go2
 
 import (
 	"fmt"
-	"log"
 	"slices"
 	"strings"
+
+	"github.com/txc/nesgo/pkg/utils"
 )
 
 // Flags used by P (Status) register
@@ -88,6 +89,31 @@ func (reg *Registers) String() string {
 	return fmt.Sprintf("A:%02X X:%02X Y:%02X P:%02X SP:%02X (%s)", reg.A, reg.X, reg.Y, reg.P, reg.SP, reg.P.String())
 }
 
+// region Errors
+
+// Error type used to indicate that the CPU attempted to execute an
+// invalid opcode
+type BadOpCodeError OpCode
+
+func (b BadOpCodeError) Error() string {
+	return fmt.Sprintf("No such opcode %#02x", OpCode(b))
+}
+
+// Error type used to indicate that the CPU executed a BRK instruction
+type BrkOpCodeError OpCode
+
+func (b BrkOpCodeError) Error() string {
+	return "Executed BRK opcode"
+}
+
+// Error type used to indicate that the CPU is in a freezed state
+// The processor is trapped infinitely in T1 phase with $FF on
+// the data bus.
+// **Reset required**
+type CpuFreezeError error
+
+// endregion Errors
+
 type Interrupt uint8
 
 const (
@@ -124,7 +150,7 @@ func (d *Decode) String() string {
 type M6502 struct {
 	decode        Decode
 	debug         DebugMode
-	log           *log.Logger
+	log           *utils.Logger
 	Nmi           bool
 	Irq           bool
 	Rst           bool
@@ -143,12 +169,10 @@ type M6502 struct {
 func NewM6502(mem Memory) *M6502 {
 	instructions := NewInstructionTable()
 	instructions.InitInstructions()
-	logger := log.Default()
-	//logger.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	return &M6502{
 		decode:        Decode{},
-		log:           logger,
+		log:           nil,
 		debug:         0,
 		Registers:     NewRegisters(),
 		Memory:        mem,
@@ -280,29 +304,23 @@ func (cpu *M6502) ToggleDecode() bool {
 }
 
 func (cpu *M6502) Decoder() *Decode {
-	return &cpu.decode
+	if cpu.decode.enabled {
+		return &cpu.decode
+	}
+	return nil
 }
 
-// Error type used to indicate that the CPU attempted to execute an
-// invalid opcode
-type BadOpCodeError OpCode
-
-func (b BadOpCodeError) Error() string {
-	return fmt.Sprintf("No such opcode %#02x", OpCode(b))
+func (cpu *M6502) SetLogger(log *utils.Logger) {
+	cpu.log = log
 }
 
-// Error type used to indicate that the CPU executed a BRK instruction
-type BrkOpCodeError OpCode
-
-func (b BrkOpCodeError) Error() string {
-	return "Executed BRK opcode"
+func (cpu *M6502) Debug(mode DebugMode) {
+	if cpu.debug&mode == 0 {
+		cpu.debug |= mode
+	} else {
+		cpu.debug &= ^mode
+	}
 }
-
-// Error type used to indicate that the CPU is in a freezed state
-// The processor is trapped infinitely in T1 phase with $FF on
-// the data bus.
-// **Reset required**
-type CpuFreezeError error
 
 // Executes the instruction pointed to by the PC register in the
 // number of cycles as returned by the instruction's Exec function.
@@ -345,8 +363,8 @@ func (cpu *M6502) Execute() (cycles uint16, error error) {
 	cpu.Registers.PC++
 	cycles += cpu.Instructions.Execute(cpu)
 
-	if cpu.debug&DebugModeVerbose != 0 && cpu.decode.enabled {
-		cpu.log.Println(cpu.decode.String())
+	if cpu.decode.enabled && cpu.log != nil {
+		cpu.log.Log(cpu.decode.String())
 	}
 
 	cpu.CurrentOp = nil
@@ -367,28 +385,7 @@ func (cpu *M6502) Run() (err error) {
 	}
 }
 
-func (cpu *M6502) IncrementCycle() {
-	if cpu.debug&DebugModeCycleDump != 0 {
-		frames := GetStackFrames()
-		mnemonic := ""
-		if cpu.CurrentOp != nil {
-			mnemonic = cpu.CurrentOp.Mnemonic
-		}
-		if len(frames) > 0 {
-			f := cpu.log.Flags()
-			cpu.log.SetFlags(log.LstdFlags)
-			cpu.log.Printf("%s: cycle incremented:\n", mnemonic)
-			for i, frame := range frames {
-				cpu.log.Printf("%s: %s %s (%s:%d)\n",
-					mnemonic,
-					strings.Repeat("  ", i),
-					frame.Function, frame.File, frame.Line)
-			}
-			cpu.log.SetFlags(f)
-		}
-	}
-	cpu.currentCycles++
-}
+func (cpu *M6502) IncrementCycle() { cpu.currentCycles++ }
 
 // region Read/Write Memory
 func (cpu *M6502) readAddress(address uint16) uint8 {

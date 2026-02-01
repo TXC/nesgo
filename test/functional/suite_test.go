@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	romPath = "../roms"
+	romPath = "../../samples/"
 )
 
 func TestSuite(t *testing.T) {
@@ -19,6 +19,8 @@ func TestSuite(t *testing.T) {
 		&FunctionalTest{},
 		&InterruptTest{},
 		&DecimalTest{},
+		&HolyMapperelTest{},
+		&MMC3Test{},
 	}
 	utils.RunSuiteTests(t, tests)
 }

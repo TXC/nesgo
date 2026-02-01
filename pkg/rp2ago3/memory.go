@@ -54,6 +54,8 @@ func (mem *MappedMemory) AddMirrors(mirrors map[uint32]uint32) (err error) {
 	return
 }
 
+func (mem *MappedMemory) Raw() []uint8 { return mem.Memory.(*m65go2.BasicMemory).M }
+
 func (mem *MappedMemory) AddMappings(mappable MappableMemory, which Mapping) (err error) {
 	fetch, store := mappable.Mappings(which)
 
